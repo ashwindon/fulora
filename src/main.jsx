@@ -7,6 +7,9 @@ if (import.meta.env.DEV) {
   import('gsap').then(({ default: gsap }) => {
     window.gsap = gsap
   })
+  import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+    window.ScrollTrigger = ScrollTrigger
+  })
 }
 
 createRoot(document.getElementById('root')).render(

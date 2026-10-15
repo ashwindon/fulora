@@ -1,124 +1,95 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { PLANTS } from './plantData.js'
-import { PlantArt } from './plants.jsx'
+import { SERVICES } from './serviceData.js'
+import { SCENES } from './sceneMap.js'
+import { BUILDERS } from './sceneBuilders.js'
 import './Services.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const REST = 0.5 // how tall a sleeping sprout is, as a share of the full plant
+const N = SERVICES.length
+const pad = (n) => String(n).padStart(2, '0')
+// Where each service "rests" on the scroll track: scene finished, text fully visible.
+const REST = SERVICES.map((_, i) => (i + 0.84) / N)
 
 export default function Services() {
   const root = useRef(null)
-  const list = useRef(null)
-  const timelines = useRef({})
-  const activeRef = useRef(null)
-  const touched = useRef(false)
-  const [active, setActive] = useState(null)
+  const trigger = useRef(null)
+  const [step, setStep] = useState(0)
 
-  // Build one paused grow-and-bloom timeline per plant.
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const ctx = gsap.context(() => {
-      PLANTS.forEach((p) => {
-        const col = root.current.querySelector(`[data-id="${p.id}"]`)
-        const grow = col.querySelector('.p-grow')
-        const bloom = col.querySelector('.p-bloom')
-        const leaves = gsap.utils.toArray('.p-leaf', col)
-        const petals = gsap.utils.toArray('.p-petal', col)
-        const H = 300 - p.top
-        const [bx, by] = p.bloom
+      const panels = gsap.utils.toArray('.sv-panel')
+      const scenes = SERVICES.map((s, i) => BUILDERS[s.id](panels[i].querySelector('.sv-frame')))
 
-        gsap.set(grow, { svgOrigin: '100 300', scaleY: REST })
-        gsap.set(bloom, { svgOrigin: `${bx} ${by}`, scale: 0.6, y: (1 - REST) * H })
-        leaves.forEach((l) => {
-          const { ax, ay, rest } = l.dataset
-          const h = 300 - ay
-          gsap.set(l, { svgOrigin: `${ax} ${ay}`, scale: +rest, y: +rest ? 0 : (1 - REST) * h })
-        })
-        petals.forEach((pt) => {
-          gsap.set(pt, { svgOrigin: `${pt.dataset.ox} ${pt.dataset.oy}`, scale: 0.3, rotation: -25 })
-        })
+      if (reduce) {
+        scenes.forEach((tl) => tl.progress(1))
+        return
+      }
 
-        const tl = gsap.timeline({ paused: true })
-        tl.to(grow, { scaleY: 1, duration: 0.9, ease: 'power3.out' }, 0)
-          .to(bloom, { y: 0, duration: 0.9, ease: 'power3.out' }, 0)
-          .to(leaves, { scale: 1, y: 0, duration: 0.8, ease: 'back.out(2)', stagger: 0.07 }, 0.2)
-          .to(bloom, { scale: 1, duration: 0.8, ease: 'back.out(1.7)' }, 0.35)
-          .to(petals, { scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(1.9)', stagger: { each: 0.025, from: 'center' } }, 0.45)
-        timelines.current[p.id] = tl
+      // Panel 0 greets the visitor as the section arrives; the rest wait their turn.
+      const first = panels[0].querySelectorAll('.sv-text, .sv-scene')
+      gsap.from(first, {
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        ease: 'power3.out',
+        stagger: 0.15,
+        scrollTrigger: { trigger: '.sv-pin', start: 'top 75%', once: true },
+      })
+      panels.slice(1).forEach((p) => {
+        gsap.set(p, { autoAlpha: 0 })
+        gsap.set(p.querySelectorAll('.sv-in'), { y: 34, opacity: 0 })
+        gsap.set(p.querySelector('.sv-frame'), { y: 40, scale: 0.9, opacity: 0 })
       })
 
-      if (reduce) return
-
-      // Entrance: the sprouts rise out of the bed one after another,
-      // then give a quick wave so people know they can be touched.
-      gsap.set('.plant-btn', { y: 90, opacity: 0 })
-      gsap.set('.sv-reveal', { y: 30, opacity: 0 })
-      ScrollTrigger.create({
-        trigger: root.current,
-        start: 'top 65%',
-        once: true,
-        onEnter: () => {
-          gsap.to('.sv-reveal', { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', stagger: 0.12 })
-          gsap.to('.plant-btn', {
-            y: 0,
-            opacity: 1,
-            duration: 1.1,
-            ease: 'back.out(1.6)',
-            stagger: 0.12,
-            delay: 0.25,
-            onComplete: () => {
-              PLANTS.forEach((p, i) => {
-                gsap.delayedCall(i * 0.3, () => {
-                  if (!touched.current) timelines.current[p.id].timeScale(1).play()
-                })
-                gsap.delayedCall(i * 0.3 + 1.2, () => {
-                  if (activeRef.current !== p.id) timelines.current[p.id].timeScale(1.5).reverse()
-                })
-              })
-            },
-          })
+      const master = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: '.sv-pin',
+          start: 'top top',
+          end: `+=${N * 100}%`,
+          pin: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+          snap: { snapTo: [0, ...REST, 1], duration: { min: 0.25, max: 0.7 }, delay: 0.12, ease: 'power1.inOut' },
+          onUpdate: (self) => setStep(Math.min(N - 1, Math.floor(self.progress * N))),
         },
       })
+      trigger.current = master.scrollTrigger
+
+      panels.forEach((p, i) => {
+        const items = p.querySelectorAll('.sv-in')
+        const frame = p.querySelector('.sv-frame')
+        if (i > 0) {
+          master
+            .to(p, { autoAlpha: 1, duration: 0.12 }, i - 0.12)
+            .to(items, { y: 0, opacity: 1, duration: 0.16, ease: 'power2.out', stagger: 0.025 }, i - 0.1)
+            .to(frame, { y: 0, scale: 1, opacity: 1, duration: 0.18, ease: 'power2.out' }, i - 0.1)
+        }
+        if (i < N - 1) {
+          master
+            .to(items, { y: -26, opacity: 0, duration: 0.1, stagger: 0.01 }, i + 0.86)
+            .to(frame, { y: -30, scale: 0.94, opacity: 0, duration: 0.12 }, i + 0.86)
+            .to(p, { autoAlpha: 0, duration: 0.12 }, i + 0.88)
+        }
+        const tl = scenes[i]
+        tl.timeScale(tl.duration() / 0.7)
+        master.add(tl, i + 0.05)
+      })
+      // Make the track exactly N long so REST positions line up with each service.
+      master.to({}, { duration: 0.0001 }, N - 0.0001)
     }, root)
     return () => ctx.revert()
   }, [])
 
-  // Play the active plant, put the others back to sleep.
-  useEffect(() => {
-    activeRef.current = active
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    PLANTS.forEach((p) => {
-      const tl = timelines.current[p.id]
-      if (!tl) return
-      if (reduce) {
-        tl.progress(p.id === active ? 1 : 0)
-      } else if (p.id === active) {
-        tl.timeScale(1).play()
-      } else if (tl.progress() > 0) {
-        tl.timeScale(1.5).reverse()
-      }
-    })
-  }, [active])
-
-  // On touch screens the plant nearest the middle of the row blooms by itself.
-  useEffect(() => {
-    if (!window.matchMedia('(max-width: 900px)').matches) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.dataset.id)
-        })
-      },
-      { root: list.current, threshold: 0.7 },
-    )
-    list.current.querySelectorAll('.plant-col').forEach((c) => io.observe(c))
-    return () => io.disconnect()
-  }, [])
-
-  const mouse = (e) => e.pointerType === 'mouse'
+  const goTo = (i) => {
+    const st = trigger.current
+    if (!st) return
+    window.scrollTo({ top: st.start + REST[i] * (st.end - st.start), behavior: 'smooth' })
+  }
 
   return (
     <section className="services" id="services" ref={root}>
@@ -129,69 +100,56 @@ export default function Services() {
         />
       </svg>
 
-      <div className="services-inner">
-        <header className="services-head">
-          <p className="sv-kicker sv-reveal">hover a plant, go on</p>
-          <h2 className="sv-reveal">
-            What we <span>grow</span>
-          </h2>
-          <p className="sv-lede sv-reveal">
-            Every garden starts as a tiny sprout. Wake each one up to see what we do and how we do it.
-          </p>
-        </header>
+      <div className="sv-pin">
+        <h2 className="sr-only">What we grow</h2>
 
-        <ul className="plants" ref={list}>
-          {PLANTS.map((p) => (
-            <li
-              key={p.id}
-              data-id={p.id}
-              className={`plant-col${active === p.id ? ' active' : ''}`}
-              style={{ '--plant': p.color }}
-              onPointerEnter={(e) => {
-                if (!mouse(e)) return
-                touched.current = true
-                setActive(p.id)
-              }}
-              onPointerLeave={(e) => mouse(e) && setActive((a) => (a === p.id ? null : a))}
-            >
-              <div className="bubble" id={`bubble-${p.id}`}>
-                <h3>{p.name}</h3>
-                <p>{p.line}</p>
-                <ul className="tags">
-                  {p.tags.map((t) => (
+        {SERVICES.map((s, i) => {
+          const Scene = SCENES[s.id]
+          return (
+            <article className={`sv-panel ${s.theme}${i % 2 ? ' flip' : ''}`} key={s.id} aria-label={s.name}>
+              <div className="sv-bg" style={{ background: s.bg }} />
+
+              <div className="sv-text">
+                <p className="sv-count sv-in">
+                  what we grow · {pad(i + 1)} <span>/ {pad(N)}</span>
+                </p>
+                <h3 className="sv-in">{s.name}</h3>
+                <p className="sv-line sv-in">{s.line}</p>
+                <p className="sv-body sv-in">{s.body}</p>
+                <ul className="sv-tags sv-in">
+                  {s.tags.map((t) => (
                     <li key={t}>{t}</li>
                   ))}
                 </ul>
+                <a className="sv-link sv-in" href="#contact">
+                  Ask about this
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path d="M4 12H19M13 6L19 12L13 18" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
               </div>
 
-              <button
-                type="button"
-                className="plant-btn"
-                aria-label={p.name}
-                aria-describedby={`bubble-${p.id}`}
-                aria-expanded={active === p.id}
-                onFocus={() => setActive(p.id)}
-                onBlur={() => setActive((a) => (a === p.id ? null : a))}
-                onClick={() => {
-                  touched.current = true
-                  setActive(p.id)
-                }}
-              >
-                <PlantArt id={p.id} />
-              </button>
-
-              <div className="bed-seg" aria-hidden="true">
-                <span className="stake">{p.name}</span>
+              <div className="sv-scene">
+                <div className="sv-frame" role="img" aria-label={`Animation: ${s.scene}`}>
+                  <Scene />
+                  <span className="sv-cap">{s.scene}</span>
+                </div>
               </div>
-            </li>
+            </article>
+          )
+        })}
+
+        <div className={`sv-dots ${SERVICES[step].theme}`} role="group" aria-label="Services">
+          {SERVICES.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              className={i === step ? 'on' : ''}
+              aria-label={`Show ${s.name}`}
+              aria-current={i === step}
+              onClick={() => goTo(i)}
+            />
           ))}
-        </ul>
-
-        <div className="services-cta sv-reveal">
-          <p>Not sure what your garden needs?</p>
-          <a className="btn" href="#contact">
-            Tell us your garden mood
-          </a>
         </div>
       </div>
     </section>
