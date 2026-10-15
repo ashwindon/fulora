@@ -262,7 +262,7 @@ export default function Hero() {
           <a className="btn" href="#contact">
             Plant a seed
           </a>
-          <a className="btn btn-ghost" href="#plants">
+          <a className="btn btn-ghost" href="#services">
             Meet the plants
           </a>
         </div>

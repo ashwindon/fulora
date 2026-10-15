@@ -4,7 +4,6 @@ import './Nav.css'
 const links = [
   ['Services', '#services'],
   ['Garden builder', '#builder'],
-  ['Plants', '#plants'],
   ['Meet the grower', '#about'],
 ]
 
