@@ -1,0 +1,33 @@
+.bee {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+  margin: -20px 0 0 -26px;
+  opacity: 0;
+}
+
+.bee .wing {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flap 0.09s ease-in-out infinite alternate;
+}
+.bee .wing-b {
+  animation-delay: -0.045s;
+}
+
+@keyframes flap {
+  from {
+    transform: rotate(-22deg) scaleY(1);
+  }
+  to {
+    transform: rotate(22deg) scaleY(0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bee .wing {
+    animation: none;
+  }
+}

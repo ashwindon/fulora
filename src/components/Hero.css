@@ -1,0 +1,215 @@
+.hero {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  padding: 0 clamp(20px, 5vw, 80px);
+  isolation: isolate;
+
+  /* Summer palette. Other seasons can override these variables. */
+  --sky-top: #3fa9f0;
+  --sky-mid: #8fd2f7;
+  --sky-bottom: #e2f5ff;
+  --far: #9ccfc8;
+  --mid: #62b87a;
+  --near: #3f9f52;
+  --tree: #2f7d3e;
+  --river: #4fb4ea;
+  --cap: #ffffff;
+
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--sky-bottom) 100%);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 6;
+  max-width: 660px;
+  padding: 88px 0 17vh;
+}
+
+.hello {
+  display: inline-block;
+  margin: 0 0 6px;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 38px);
+  color: var(--poppy);
+  transform: rotate(-3deg);
+}
+
+.hero h1 {
+  font-size: clamp(44px, min(6.6vw, 10.6vh), 108px);
+  letter-spacing: -0.02em;
+  color: var(--leaf-dark);
+}
+
+.word {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.1em 0.04em 0.18em;
+  margin: -0.1em -0.04em -0.18em;
+  vertical-align: bottom;
+}
+.word-in {
+  display: inline-block;
+}
+
+.accent {
+  position: relative;
+  display: inline-block;
+  color: var(--poppy);
+}
+.underline {
+  position: absolute;
+  left: 0;
+  bottom: -0.02em;
+  width: 100%;
+  height: 0.2em;
+  overflow: visible;
+}
+
+.lede {
+  max-width: 30em;
+  margin: clamp(16px, 3vh, 28px) 0 clamp(20px, 3.4vh, 34px);
+  font-size: clamp(17px, 1.5vw, 21px);
+  font-weight: 600;
+  color: #12301f;
+  text-shadow: 0 0 10px rgba(226, 245, 255, 0.95), 0 0 22px rgba(226, 245, 255, 0.8);
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.scene {
+  position: absolute;
+  right: 2vw;
+  bottom: 9vh;
+  height: 88vh;
+  aspect-ratio: 600 / 760;
+  z-index: 2;
+}
+.scene svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.petals-fall {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+.petal-fall {
+  position: absolute;
+  border-radius: 60% 40% 60% 40% / 70% 70% 30% 30%;
+  opacity: 0;
+}
+
+.grass {
+  position: absolute;
+  left: 0;
+  bottom: 12vh;
+  width: 100%;
+  height: 11vh;
+  z-index: 4;
+  pointer-events: none;
+}
+.blade {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway var(--dur, 4s) ease-in-out infinite alternate;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes sway {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+.soil {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 15vh;
+  z-index: 5;
+}
+
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 3.2vh;
+  z-index: 6;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--cream);
+  animation: bob 2s ease-in-out infinite;
+}
+.scroll-cue::after {
+  content: ' \2193';
+}
+@keyframes bob {
+  50% {
+    transform: translate(-50%, 6px);
+  }
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    padding-bottom: 9vh;
+  }
+  .hero-copy {
+    padding: 84px 0 0;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 11.5vw, 68px);
+  }
+  .lede {
+    font-size: 16px;
+    margin: 14px 0 20px;
+    line-height: 1.5;
+  }
+  .cta {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .cta .btn {
+    padding: 12px 18px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .scene {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    justify-self: center;
+    align-self: end;
+    height: min(46vh, 150vw);
+    margin-top: 2vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blade,
+  .scroll-cue {
+    animation: none;
+  }
+}

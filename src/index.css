@@ -1,0 +1,79 @@
+:root {
+  --cream: #fff4d9;
+  --cream-deep: #ffe9b8;
+  --leaf: #2f7d3e;
+  --leaf-light: #5db35a;
+  --leaf-dark: #1f5a2b;
+  --soil: #5a3a22;
+  --soil-dark: #3f2615;
+  --coral: #ff6f4d;
+  --marigold: #ffb627;
+  --poppy: #e8426b;
+  --lavender: #8e6bd1;
+  --sky: #cfeaf7;
+  --ink: #2b2118;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --font-hand: 'Caveat', 'Segoe Print', cursive;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  font-weight: 700;
+  line-height: 1.02;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lavender);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

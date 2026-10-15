@@ -1,0 +1,117 @@
+.landscape {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  bottom: 12vh;
+  height: 54vh;
+  width: 155.52vh;
+  left: calc(50% - 77.76vh);
+  overflow: visible;
+}
+.far {
+  fill: var(--far);
+}
+.mid {
+  fill: var(--mid);
+}
+.near {
+  fill: var(--near);
+}
+.river {
+  fill: var(--river);
+}
+.tree {
+  fill: var(--tree);
+}
+.cap {
+  fill: var(--cap);
+}
+
+.shimmer {
+  stroke-dasharray: 12 30;
+  animation: flow 3.2s linear infinite;
+}
+.shimmer-b {
+  animation-duration: 4.4s;
+  stroke-dasharray: 8 36;
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -168;
+  }
+}
+
+.cloud {
+  position: absolute;
+  left: 0;
+  height: auto;
+  opacity: 0.95;
+  animation: drift var(--dur) linear infinite;
+  animation-delay: var(--delay);
+  will-change: transform;
+}
+@keyframes drift {
+  from {
+    transform: translateX(-30vw);
+  }
+  to {
+    transform: translateX(120vw);
+  }
+}
+
+.hero-sun {
+  position: absolute;
+  left: 50%;
+  top: 8vh;
+  width: 15vh;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6b0 0%, #ffe45c 62%, #ffd23a 100%);
+  box-shadow: 0 0 0 2.4vh rgba(255, 240, 150, 0.35), 0 0 0 5vh rgba(255, 240, 150, 0.16);
+}
+.hero-sun::before {
+  content: '';
+  position: absolute;
+  inset: -9vh;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 244, 170, 0.55) 0 7deg, transparent 7deg 22.5deg);
+  -webkit-mask: radial-gradient(circle, transparent 36%, #000 40%, transparent 72%);
+  mask: radial-gradient(circle, transparent 36%, #000 40%, transparent 72%);
+  animation: spin 80s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .hero-sun {
+    left: auto;
+    right: 8vw;
+    top: 74px;
+    width: 64px;
+  }
+  .layer {
+    height: 40vh;
+    width: 115.2vh;
+    left: calc(50% - 57.6vh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud {
+    animation: none;
+    transform: translateX(var(--rx));
+  }
+  .shimmer,
+  .hero-sun::before {
+    animation: none;
+  }
+}
