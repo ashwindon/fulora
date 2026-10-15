@@ -1,4 +1,5 @@
 import { petalPath, leafPath, seeded } from './botany.js'
+import './waterScene.css'
 
 const hand = { fontFamily: "'Caveat','Segoe Print',cursive", fontWeight: 700 }
 
@@ -524,138 +525,460 @@ export function SeasonalScene() {
 }
 
 /* ------------------------------------------------------------------ */
-/* 5. Water and stone: a night by the waterfall (dark scene)           */
+/* 5. Water and stone: a moonlit zen garden that wakes up piece by piece */
 /* ------------------------------------------------------------------ */
 
 const LOTUS = [
-  { x: 300, y: 452, s: 1 },
-  { x: 372, y: 482, s: 0.85 },
-  { x: 236, y: 488, s: 0.8 },
+  { x: 270, y: 452, s: 1.05 },
+  { x: 322, y: 488, s: 0.9 },
+  { x: 214, y: 480, s: 0.85 },
+  { x: 380, y: 466, s: 0.95 },
+  { x: 452, y: 492, s: 0.8 },
 ]
+
+const CLIFF_ROCKS = [
+  [20, 384, 44], [78, 394, 40], [40, 330, 42], [100, 342, 36], [16, 278, 40], [82, 288, 36],
+  [38, 232, 38], [94, 240, 32], [14, 190, 36], [68, 188, 32], [26, 150, 30], [96, 168, 24],
+  [224, 390, 40], [252, 372, 34], [216, 336, 34], [248, 322, 30], [224, 290, 30], [252, 276, 26],
+  [214, 238, 28], [238, 226, 24], [206, 198, 24], [192, 182, 20],
+]
+const ISLAND_ROCKS = [
+  [356, 394, 36], [402, 398, 34], [448, 400, 36], [494, 396, 34], [534, 392, 30],
+  [378, 368, 28], [428, 372, 30], [478, 372, 28], [520, 368, 26],
+]
+const ROCK_TONES = ['#33606f', '#3b6e82', '#2c5565', '#42798f', '#376477']
+const PINES = [[250, 288, 1], [290, 300, 0.8], [330, 292, 0.9], [150, 296, 0.7], [520, 286, 1], [560, 296, 0.8]]
+const REEDS = [[16, 440], [34, 452], [50, 444], [566, 470], [584, 456], [548, 478]]
+
+function rockPath(cx, cy, rad, rnd) {
+  const pts = Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2 + (rnd() - 0.5) * 0.4
+    const rr = rad * (0.78 + rnd() * 0.3)
+    return `${(cx + Math.cos(a) * rr).toFixed(1)} ${(cy + Math.sin(a) * rr * 0.82).toFixed(1)}`
+  })
+  return `M${pts.join('L')}Z`
+}
+
+function Rock({ x, y, r, rnd, cls }) {
+  const fill = ROCK_TONES[Math.floor(rnd() * ROCK_TONES.length)]
+  return (
+    <g className={cls}>
+      <path d={rockPath(x, y, r, rnd)} fill={fill} stroke={fill} strokeWidth="6" strokeLinejoin="round" />
+      <ellipse cx={x - r * 0.25} cy={y - r * 0.32} rx={r * 0.46} ry={r * 0.22} fill="#8fc1d6" opacity="0.3" transform={`rotate(-18 ${x} ${y})`} />
+      <ellipse cx={x + r * 0.28} cy={y + r * 0.34} rx={r * 0.55} ry={r * 0.2} fill="#04121b" opacity="0.28" />
+    </g>
+  )
+}
+
+function Koi({ i }) {
+  const body = ['#ff7a3d', '#f6f1e6', '#ff9a63'][i]
+  const spot = ['#fff', '#ff6a2f', '#2b2b2b'][i]
+  return (
+    <g className="wt-koi">
+      <path d="M-20 0 L-34 -9 Q-29 0 -34 9Z" fill={body} opacity="0.85" />
+      <path d="M-20 0 C-12 -9 9 -9 18 0 C9 9 -12 9 -20 0Z" fill={body} />
+      <ellipse cx="2" cy="-8" rx="7" ry="3" fill={body} opacity="0.7" transform="rotate(-24 2 -8)" />
+      <ellipse cx="2" cy="8" rx="7" ry="3" fill={body} opacity="0.7" transform="rotate(24 2 8)" />
+      <circle cx="-4" cy="-1.5" r="3.4" fill={spot} opacity="0.9" />
+      <circle cx="6" cy="2" r="2.4" fill={spot} opacity="0.9" />
+      <circle cx="13" cy="-2" r="1.5" fill="#102030" />
+    </g>
+  )
+}
 
 export function WaterScene() {
   const rnd = seeded(31)
+  const stars = Array.from({ length: 46 }, () => ({ x: rnd() * 600, y: rnd() * 200, r: 0.6 + rnd() * 1.5, d: (rnd() * 4).toFixed(2) }))
+  const cliff = CLIFF_ROCKS.map(([x, y, r]) => ({ x, y, r, rnd: seeded(Math.floor(x * 7 + y * 3)) }))
+  const island = ISLAND_ROCKS.map(([x, y, r]) => ({ x, y, r, rnd: seeded(Math.floor(x * 5 + y * 11)) }))
+  const drops = Array.from({ length: 16 }, (_, i) => ({
+    dx: (i % 2 ? 1 : -1) * (10 + rnd() * 46),
+    h: 18 + rnd() * 34,
+    dur: (1.3 + rnd() * 1.1).toFixed(2),
+    del: (rnd() * -3).toFixed(2),
+    r: (1.6 + rnd() * 1.6).toFixed(1),
+  }))
+  const petals = Array.from({ length: 18 }, () => ({ x: rnd() * 600, dur: (11 + rnd() * 9).toFixed(1), del: (rnd() * -18).toFixed(1), sway: (rnd() * 1.6 + 2.4).toFixed(1), s: (0.8 + rnd() * 0.8).toFixed(2) }))
+  const flies = Array.from({ length: 20 }, () => ({ x: 20 + rnd() * 560, y: 220 + rnd() * 250, d: (rnd() * -7).toFixed(2), t: (5 + rnd() * 5).toFixed(1) }))
+  const lotus = (l) => ({ ...l, petals: Array.from({ length: 8 }, (_, i) => petalPath(l.x, l.y, -165 + i * 21.4, 27 * l.s, 9 * l.s)), inner: Array.from({ length: 6 }, (_, i) => petalPath(l.x, l.y - 2, -152 + i * 24.8, 17 * l.s, 6.4 * l.s)) })
+
   return (
     <svg viewBox="0 0 600 520" aria-hidden="true">
       <defs>
         <linearGradient id="wt-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#06182a" />
-          <stop offset="1" stopColor="#15485a" />
+          <stop offset="0" stopColor="#030818" />
+          <stop offset="0.5" stopColor="#0a2540" />
+          <stop offset="1" stopColor="#1b5a6c" />
         </linearGradient>
         <linearGradient id="wt-water" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1e6b7d" />
-          <stop offset="1" stopColor="#0a2e3c" />
+          <stop offset="0" stopColor="#1a6377" />
+          <stop offset="0.35" stopColor="#0f4558" />
+          <stop offset="1" stopColor="#04141d" />
         </linearGradient>
         <linearGradient id="wt-fall" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e9fbff" />
-          <stop offset="1" stopColor="#8fd3e6" />
+          <stop offset="0" stopColor="#f4fdff" />
+          <stop offset="1" stopColor="#8fd0e4" />
+        </linearGradient>
+        <linearGradient id="wt-aur" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3de0b6" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#3de0b6" stopOpacity="0.42" />
+          <stop offset="1" stopColor="#6a7cff" stopOpacity="0" />
         </linearGradient>
         <radialGradient id="wt-glow">
-          <stop offset="0" stopColor="#ffe9a8" stopOpacity="0.95" />
-          <stop offset="1" stopColor="#ffe9a8" stopOpacity="0" />
+          <stop offset="0" stopColor="#ffe2a0" stopOpacity="0.95" />
+          <stop offset="0.4" stopColor="#ffd27a" stopOpacity="0.35" />
+          <stop offset="1" stopColor="#ffd27a" stopOpacity="0" />
         </radialGradient>
-        <path id="wt-koi-path" d="M520 452 A150 26 0 1 1 220 452 A150 26 0 1 1 520 452" fill="none" />
+        <radialGradient id="wt-glowh">
+          <stop offset="0" stopColor="#ffe2a0" stopOpacity="0.5" />
+          <stop offset="0.5" stopColor="#ffd27a" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#ffd27a" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="wt-glowp">
+          <stop offset="0" stopColor="#ff9ec7" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#ff9ec7" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="wt-glowm">
+          <stop offset="0" stopColor="#fff2c4" stopOpacity="0.7" />
+          <stop offset="1" stopColor="#fff2c4" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="wt-vig" cx="0.5" cy="0.5" r="0.72">
+          <stop offset="0.55" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.6" />
+        </radialGradient>
+        <path id="wt-koi-a" d="M430 462 A130 24 0 1 1 170 462 A130 24 0 1 1 430 462" fill="none" />
+        <path id="wt-koi-b" d="M520 478 A96 18 0 1 0 328 478 A96 18 0 1 0 520 478" fill="none" />
       </defs>
-      <rect width="600" height="520" fill="url(#wt-sky)" />
-      {Array.from({ length: 26 }, (_, i) => (
-        <circle className="wt-star" key={i} cx={rnd() * 600} cy={rnd() * 200} r={0.8 + rnd() * 1.4} fill="#fff" style={{ animationDelay: `${(rnd() * 4).toFixed(2)}s` }} />
-      ))}
-      <g className="wt-moon">
-        <circle cx="480" cy="92" r="88" fill="url(#wt-glow)" opacity="0.4" />
-        <circle cx="480" cy="92" r="32" fill="#fff6d6" />
-        <circle cx="470" cy="86" r="6" fill="#f1e2b4" />
-        <circle cx="490" cy="102" r="4" fill="#f1e2b4" />
-      </g>
-      <path d="M0 300 L70 250 L130 280 L210 220 L300 285 L390 240 L470 290 L540 255 L600 285 V400 H0Z" fill="#0d3040" />
 
-      <g className="wt-bamboo">
-        {[548, 566, 584].map((x, i) => (
-          <g key={x} style={{ animationDelay: `${i * 0.7}s` }}>
-            <rect x={x - 4} y={110 + i * 26} width="8" height={300 - i * 26} rx="4" fill="#2f6b4a" />
-            {[170, 230, 290, 350].map((y) => (
-              <rect key={y} x={x - 5} y={y + i * 12} width="10" height="4" rx="2" fill="#1d4f36" />
-            ))}
-            <path d={`M${x} ${150 + i * 26} q-34 -10 -50 14 q30 6 50 -14Z`} fill="#3d8a5c" />
-            <path d={`M${x} ${200 + i * 20} q30 -12 48 10 q-28 8 -48 -10Z`} fill="#3d8a5c" />
-          </g>
-        ))}
-      </g>
+      <g className="wt-world">
+        <rect width="600" height="340" fill="url(#wt-sky)" />
 
-      <path d="M0 150 C60 140 120 152 170 160 L210 168 C230 190 232 330 250 392 L0 392Z" fill="#244654" />
-      <path d="M0 200 C50 190 100 200 140 214 C130 260 110 300 90 392 H0Z" fill="#2f5666" />
-      <path d="M30 230 C80 240 120 250 150 300 C120 330 80 340 40 392 H0V250Z" fill="#35606f" opacity="0.7" />
+        <g className="wt-far">
+          <path d="M-30 330 L30 262 L86 292 L146 226 L212 282 L276 244 L342 296 L420 226 L500 284 L562 244 L640 304 V340 H-30Z" fill="#0f3347" />
+          <path d="M146 226 L212 282 M276 244 L342 296 M420 226 L500 284" stroke="#7fb8cf" strokeWidth="1.4" opacity="0.4" fill="none" />
+        </g>
 
-      <g className="wt-fallwrap">
-        <path d="M168 164 C168 240 162 330 158 392 L214 392 C208 330 204 240 198 170Z" fill="url(#wt-fall)" opacity="0.92" />
-        {[176, 187, 198].map((x, i) => (
-          <path className="wt-flow" key={x} d={`M${x} 170 C${x - 2} 250 ${x - 4} 320 ${x - 5} 392`} fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" style={{ animationDelay: `${i * -0.5}s` }} />
-        ))}
-      </g>
-
-      <path d="M0 386 C100 378 200 392 300 384 S500 390 600 384 V520 H0Z" fill="url(#wt-water)" />
-      <g className="wt-ripples" fill="none" stroke="#e9fbff" strokeWidth="1.6">
-        {[0, 1, 2].map((i) => (
-          <ellipse className="wt-ripple" key={i} cx="186" cy="396" rx="30" ry="7" style={{ animationDelay: `${i * -1.1}s` }} />
-        ))}
-      </g>
-      <g className="wt-mist" fill="#d8f4ff">
-        <ellipse className="wt-mist-a" cx="186" cy="388" rx="64" ry="18" opacity="0.28" />
-        <ellipse className="wt-mist-b" cx="150" cy="380" rx="46" ry="12" opacity="0.22" />
-        <ellipse className="wt-mist-c" cx="230" cy="382" rx="42" ry="11" opacity="0.2" />
-      </g>
-      <ellipse cx="470" cy="470" rx="26" ry="5" fill="#fff6d6" opacity="0.16" />
-      <ellipse cx="470" cy="486" rx="14" ry="3" fill="#fff6d6" opacity="0.12" />
-
-      <path d="M306 346 C340 334 520 332 540 350 L552 392 L300 392Z" fill="#2f5666" />
-      <path d="M318 346 C350 338 510 338 530 350 L520 360 L326 360Z" fill="#3d6c7c" />
-
-      <g transform="translate(425 342)">
-        <g className="wt-buddha">
-        <g className="wt-halo">
-          <circle cx="0" cy="-136" r="74" fill="url(#wt-glow)" />
-          <circle className="wt-halo-ring" cx="0" cy="-136" r="40" fill="none" stroke="#ffe9a8" strokeWidth="2" opacity="0.8" />
-          <g className="wt-rays" stroke="#ffe9a8" strokeWidth="2" strokeLinecap="round" opacity="0.7">
-            {Array.from({ length: 16 }, (_, i) => (
-              <line key={i} x1="0" y1="-182" x2="0" y2="-166" transform={`rotate(${i * 22.5} 0 -136)`} />
+        <g className="wt-pagoda" fill="#06141f" transform="translate(-122 20)">
+          <rect x="402" y="210" width="36" height="16" />
+          <path d="M392 212 Q420 199 448 212 L441 216 H399Z" />
+          <rect x="408" y="196" width="24" height="13" />
+          <path d="M401 198 Q420 188 439 198 L434 201 H406Z" />
+          <rect x="413" y="184" width="14" height="11" />
+          <path d="M406 186 Q420 177 434 186 L430 189 H410Z" />
+          <path d="M420 178 V162" stroke="#06141f" strokeWidth="2" />
+          <circle cx="420" cy="170" r="2.2" />
+          <g fill="#ffd27a" className="wt-wins">
+            {[
+              [408, 214, 6, 9], [426, 214, 6, 9], [412, 199, 5, 8], [423, 199, 5, 8], [417, 187, 6, 6],
+            ].map(([x, y, w, h], i) => (
+              <rect className="wt-win" key={i} x={x} y={y} width={w} height={h} rx="1" />
             ))}
           </g>
         </g>
-        <ellipse cx="0" cy="4" rx="66" ry="12" fill="#5b7f8b" />
-        <path d="M-60 0 C-60 -22 -30 -34 0 -34 C30 -34 60 -22 60 0 C40 9 -40 9 -60 0Z" fill="#9fb0b8" />
-        <path d="M-30 -30 C-36 -72 -26 -106 0 -114 C26 -106 36 -72 30 -30Z" fill="#adbdc4" />
-        <path d="M-30 -96 C-48 -72 -46 -46 -20 -34 L0 -36 L20 -34 C46 -46 48 -72 30 -96 C26 -70 20 -52 0 -48 C-20 -52 -26 -70 -30 -96Z" fill="#a3b4bc" />
-        <ellipse cx="0" cy="-40" rx="17" ry="8" fill="#b9c8ce" />
-        <circle cx="0" cy="-134" r="21" fill="#b9c8ce" />
-        <circle cx="0" cy="-156" r="8" fill="#b9c8ce" />
-        <ellipse cx="-22" cy="-128" rx="4" ry="9" fill="#a9b9c0" />
-        <ellipse cx="22" cy="-128" rx="4" ry="9" fill="#a9b9c0" />
-        <path d="M-12 -136 q4 3 8 0 M4 -136 q4 3 8 0" fill="none" stroke="#5b6e77" strokeWidth="2" strokeLinecap="round" />
-        <path d="M-5 -122 q5 4 10 0" fill="none" stroke="#7a8d96" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M22 -100 C34 -80 30 -60 12 -44" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.18" />
-        </g>
-      </g>
 
-      {LOTUS.map((l, i) => (
-        <g className="wt-lotus" key={i} data-x={l.x} data-y={l.y}>
-          <ellipse className="wt-pad" cx={l.x} cy={l.y + 6} rx={30 * l.s} ry={9 * l.s} fill="#2f7d5a" />
-          {Array.from({ length: 7 }, (_, k) => (
-            <path className="wt-petal" key={k} d={petalPath(l.x, l.y, -160 + k * 23.3, 26 * l.s, 8 * l.s)} fill={k % 2 ? '#ff9ec7' : '#ffc2dc'} />
+        <g className="wt-mist">
+          <ellipse className="wt-mist-a" cx="200" cy="296" rx="150" ry="14" fill="#cfeaf2" opacity="0.1" />
+          <ellipse className="wt-mist-b" cx="430" cy="306" rx="170" ry="12" fill="#cfeaf2" opacity="0.09" />
+          <ellipse className="wt-mist-c" cx="330" cy="278" rx="120" ry="9" fill="#cfeaf2" opacity="0.08" />
+        </g>
+
+        <g className="wt-mid">
+          <path d="M-30 340 C40 300 110 318 190 300 S330 296 420 308 S560 296 640 312 V404 H-30Z" fill="#0a2433" />
+          {PINES.map(([x, y, s], i) => (
+            <path key={i} className="wt-pine" d={`M${x} ${y - 34 * s} l${-9 * s} ${18 * s} h${18 * s}z M${x} ${y - 22 * s} l${-12 * s} ${20 * s} h${24 * s}z M${x} ${y - 8 * s} l${-15 * s} ${22 * s} h${30 * s}z`} fill="#071d28" />
           ))}
-          <circle cx={l.x} cy={l.y - 4} r={4 * l.s} fill="#ffe170" />
         </g>
-      ))}
 
-      {[0, 1].map((i) => (
-        <g className="wt-koi" key={i}>
-          <path d="M-14 0 C-8 -7 8 -7 14 0 C8 7 -8 7 -14 0Z" fill={i ? '#ffffff' : '#ff7a3d'} />
-          <path d="M-14 0 L-24 -7 L-22 0 L-24 7Z" fill={i ? '#ffd2b8' : '#ff9a63'} />
-          <circle cx="4" cy="-2" r="3" fill={i ? '#ff7a3d' : '#fff'} opacity="0.9" />
+        <path d="M92 170 H214 V400 H88Z" fill="#0b2230" />
+        <g className="wt-cliff">
+          {cliff.map((k, i) => (
+            <Rock key={i} x={k.x} y={k.y} r={k.r} rnd={k.rnd} cls="wt-rock" />
+          ))}
+          <g className="wt-rock wt-ledge">
+            <ellipse cx="158" cy="180" rx="26" ry="5" fill="#2a4e60" />
+            <ellipse cx="156" cy="265" rx="54" ry="7" fill="#27495a" />
+          </g>
+          <g className="wt-bonsai">
+            <path d="M58 150 C56 136 62 128 70 120" fill="none" stroke="#10242c" strokeWidth="5" strokeLinecap="round" />
+            <ellipse cx="62" cy="112" rx="28" ry="12" fill="#0d3a36" />
+            <ellipse cx="86" cy="124" rx="18" ry="8" fill="#0f423c" />
+            <ellipse cx="42" cy="126" rx="16" ry="7" fill="#0d3a36" />
+            <ellipse cx="56" cy="108" rx="14" ry="5" fill="#2a8a72" opacity="0.5" />
+          </g>
         </g>
-      ))}
 
-      {Array.from({ length: 14 }, (_, i) => (
-        <circle className="wt-firefly" key={i} cx={40 + rnd() * 520} cy={230 + rnd() * 220} r="2.6" fill="#fff3a8" style={{ animationDelay: `${(rnd() * -6).toFixed(2)}s`, animationDuration: `${5 + rnd() * 4}s` }} />
-      ))}
+        <g className="wt-falls">
+          <g className="wt-fall1">
+            <path d="M143 178 C142 214 138 240 135 264 L181 264 C178 240 175 214 173 178Z" fill="url(#wt-fall)" opacity="0.8" />
+            <path d="M152 180 C151 214 149 240 148 264 L168 264 C167 240 165 214 164 180Z" fill="#fff" opacity="0.28" />
+            {[148, 158, 168].map((x, i) => (
+              <path className="wt-flow fast" key={x} d={`M${x} 178 C${x - 1} 210 ${x - 2} 240 ${x - 2} 264`} style={{ animationDelay: `${i * -0.35}s` }} />
+            ))}
+          </g>
+          <g className="wt-fall2">
+            <path d="M112 262 L202 262 C206 304 214 352 224 396 L92 396 C102 352 108 304 112 262Z" fill="url(#wt-fall)" opacity="0.78" />
+            <path d="M132 264 C130 310 128 352 126 396 L186 396 C184 352 182 310 180 264Z" fill="#fff" opacity="0.22" />
+            {[122, 134, 146, 158, 170, 182].map((x, i) => (
+              <path className={`wt-flow${i % 2 ? '' : ' fast'}`} key={x} d={`M${x} 264 C${x - 2} 310 ${x - 3} 355 ${x - 4} 396`} style={{ animationDelay: `${i * -0.42}s` }} />
+            ))}
+          </g>
+          <g className="wt-lips" fill="#fff">
+            <path d="M140 178 Q158 186 176 178" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" opacity="0.85" />
+            <path d="M118 263 Q158 273 198 263" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" opacity="0.85" />
+            <circle cx="146" cy="182" r="3" opacity="0.7" />
+            <circle cx="170" cy="183" r="2.4" opacity="0.7" />
+            <circle cx="126" cy="268" r="3.2" opacity="0.7" />
+            <circle cx="190" cy="268" r="3.2" opacity="0.7" />
+          </g>
+        </g>
+
+        <path d="M0 394 C80 388 160 400 240 394 S420 388 520 396 S580 392 600 394 V520 H0Z" fill="url(#wt-water)" />
+        <path d="M0 402 C100 398 200 408 300 402 S500 398 600 404" fill="none" stroke="#7fd0e0" strokeWidth="1.4" opacity="0.25" />
+
+        <g className="wt-refl" fill="#fff6d6">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <rect className="wt-refl-bar" key={i} x={470 - (30 - i * 2.4)} y={406 + i * 11} width={(30 - i * 2.4) * 2} height="3.2" rx="1.6" style={{ animationDelay: `${i * -0.35}s` }} />
+          ))}
+        </g>
+
+        <g className="wt-spray">
+          <g className="wt-foam" fill="#eaf9ff">
+            <ellipse cx="156" cy="398" rx="46" ry="8" opacity="0.7" />
+            <ellipse cx="136" cy="402" rx="22" ry="5" opacity="0.6" />
+            <ellipse cx="180" cy="403" rx="20" ry="4.5" opacity="0.55" />
+          </g>
+          <g fill="none" stroke="#e9fbff" strokeWidth="1.6">
+            {[0, 1, 2].map((i) => (
+              <ellipse className="wt-ripple" key={i} cx="156" cy="404" rx="34" ry="7" style={{ animationDelay: `${i * -1.1}s` }} />
+            ))}
+          </g>
+          <g fill="#f4fdff">
+            {drops.map((d, i) => (
+              <circle className="wt-drop" key={i} cx="156" cy="396" r={d.r} style={{ '--dx': `${d.dx}px`, '--h': `${d.h}px`, animationDuration: `${d.dur}s`, animationDelay: `${d.del}s` }} />
+            ))}
+          </g>
+          <g fill="#d8f4ff">
+            <ellipse className="wt-plume wt-plume-a" cx="156" cy="388" rx="40" ry="16" />
+            <ellipse className="wt-plume wt-plume-b" cx="140" cy="384" rx="30" ry="12" />
+            <ellipse className="wt-plume wt-plume-c" cx="176" cy="386" rx="28" ry="11" />
+          </g>
+        </g>
+
+        <g className="wt-island">
+          <path d="M330 400 C330 362 352 342 384 340 L504 340 C536 344 556 366 556 400Z" fill="#1d4252" />
+          {island.map((k, i) => (
+            <Rock key={i} x={k.x} y={k.y} r={k.r} rnd={k.rnd} cls="wt-rock wt-isl-rock" />
+          ))}
+          <ellipse className="wt-slab" cx="445" cy="341" rx="100" ry="14" fill="#34647a" stroke="#4f8aa3" strokeWidth="2" />
+          {[352, 380, 512, 540].map((x, i) => (
+            <path key={x} className="wt-moss" d={`M${x} 346 l3 -9 l3 9 M${x + 8} 346 l2 -7 l3 7`} fill="none" stroke="#2f8a64" strokeWidth="2" strokeLinecap="round" opacity={0.7 - i * 0.05} />
+          ))}
+        </g>
+
+        <g className="wt-buddha" transform="translate(445 340)">
+          <g className="wt-bud-in">
+            <g className="wt-pedestal">
+              <ellipse cx="0" cy="4" rx="72" ry="13" fill="#4a6f7d" />
+              {[-60, -44, -28, -12, 12, 28, 44, 60].map((x, i) => (
+                <ellipse key={x} cx={x} cy={3 + Math.abs(x) * 0.04} rx="9" ry="6.5" fill={i % 2 ? '#7f9cac' : '#93b0be'} />
+              ))}
+            </g>
+            <ellipse cx="0" cy="-2" rx="64" ry="11" fill="#6a8896" />
+            <path d="M-60 -2 C-60 -24 -30 -36 0 -36 C30 -36 60 -24 60 -2 C40 8 -40 8 -60 -2Z" fill="#8c9fa9" />
+            <path d="M8 -36 C34 -34 60 -24 60 -2 C46 6 22 8 8 8Z" fill="#0b2230" opacity="0.25" />
+            <path d="M-46 -8 C-30 -18 -10 -20 6 -18 M10 -22 C28 -20 42 -14 52 -8" fill="none" stroke="#7a8e99" strokeWidth="2" strokeLinecap="round" />
+            <path d="M-30 -32 C-36 -74 -26 -108 0 -116 C26 -108 36 -74 30 -32Z" fill="#9aadb7" />
+            <path d="M6 -114 C28 -106 38 -74 30 -32 L8 -32Z" fill="#0b2230" opacity="0.26" />
+            <path d="M-14 -96 C-10 -70 -8 -52 -10 -34 M8 -100 C12 -76 14 -54 12 -34 M0 -112 V-40" fill="none" stroke="#8ea2ad" strokeWidth="1.6" strokeLinecap="round" opacity="0.8" />
+            <path d="M-30 -98 C-50 -74 -48 -46 -22 -34 L0 -36 L22 -34 C48 -46 50 -74 30 -98 C26 -72 20 -54 0 -50 C-20 -54 -26 -72 -30 -98Z" fill="#a3b4bc" />
+            <ellipse cx="0" cy="-40" rx="17" ry="8" fill="#bccbd2" />
+            <path d="M-10 -42 q10 6 20 0" fill="none" stroke="#8ea2ad" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="0" cy="-134" r="21" fill="#aab9c0" />
+            <path d="M8 -154 C26 -148 28 -122 14 -114 C20 -128 18 -142 8 -154Z" fill="#0b2230" opacity="0.2" />
+            <path d="M-20 -140 C-22 -166 22 -166 20 -140 C10 -150 -10 -150 -20 -140Z" fill="#8c9fa9" />
+            {[-14, -7, 0, 7, 14].map((x) => (
+              <circle key={x} cx={x} cy={-150 + Math.abs(x) * 0.25} r="3.2" fill="#7b8f9a" />
+            ))}
+            <circle cx="0" cy="-163" r="6.5" fill="#bccad0" />
+            <ellipse cx="-22" cy="-128" rx="4" ry="10" fill="#a9b9c0" />
+            <ellipse cx="22" cy="-128" rx="4" ry="10" fill="#a9b9c0" />
+            <path d="M-12 -135 q4 3 8 0 M4 -135 q4 3 8 0" fill="none" stroke="#56707c" strokeWidth="2" strokeLinecap="round" />
+            <path d="M-4 -128 l-1 5 h4 M-5 -118 q5 4 10 0" fill="none" stroke="#6f8590" strokeWidth="1.6" strokeLinecap="round" />
+            <circle cx="0" cy="-142" r="1.6" fill="#56707c" />
+            <ellipse cx="6" cy="-148" rx="9" ry="5" fill="#e8f4f7" opacity="0.4" />
+            <path d="M24 -100 C36 -80 32 -60 14 -44" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.2" />
+          </g>
+          <g className="wt-halo">
+            <circle cx="0" cy="-136" r="48" fill="none" stroke="#ffe9a8" strokeWidth="2.2" opacity="0.85" />
+            <circle className="wt-halo-ring" cx="0" cy="-136" r="38" fill="none" stroke="#ffe9a8" strokeWidth="1.4" opacity="0.6" />
+            <g className="wt-rays" stroke="#ffe9a8" strokeWidth="2" strokeLinecap="round" opacity="0.75">
+              {Array.from({ length: 20 }, (_, i) => (
+                <line key={i} x1="0" y1={-194 - (i % 2) * 6} x2="0" y2="-176" transform={`rotate(${i * 18} 0 -136)`} />
+              ))}
+            </g>
+          </g>
+        </g>
+
+        <g className="wt-candles">
+          {[
+            [398, 346],
+            [494, 346],
+          ].map(([x, y], i) => (
+            <g className="wt-candle" key={i} data-x={x} data-y={y}>
+              <rect x={x - 3} y={y - 12} width="6" height="12" rx="1.5" fill="#f4e8d0" />
+              <path className="wt-smoke" d={`M${x} ${y - 20} c-6 -8 6 -14 0 -22 c-6 -8 6 -14 0 -22`} fill="none" stroke="#dfeaf0" strokeWidth="2" strokeLinecap="round" style={{ animationDelay: `${i * -1.6}s` }} />
+              <g className="wt-flame" data-x={x} data-y={y - 12}>
+                <path className="wt-flame-in" d={`M${x} ${y - 24} C${x - 5} ${y - 18} ${x - 3} ${y - 13} ${x} ${y - 12} C${x + 3} ${y - 13} ${x + 5} ${y - 18} ${x} ${y - 24}Z`} fill="#ffd27a" />
+              </g>
+            </g>
+          ))}
+        </g>
+
+        {[
+          [66, 414],
+          [556, 440],
+        ].map(([x, y], i) => (
+          <g className="wt-lant" key={i}>
+            <ellipse cx={x} cy={y + 2} rx="16" ry="4" fill="#06141f" opacity="0.6" />
+            <rect x={x - 11} y={y - 4} width="22" height="6" rx="1.5" fill="#6b838f" />
+            <rect x={x - 4} y={y - 26} width="8" height="22" fill="#7d96a2" />
+            <rect x={x - 14} y={y - 46} width="28" height="20" rx="2" fill="#5d7683" />
+            <rect x={x - 9} y={y - 42} width="18" height="12" rx="1.5" fill="#ffd27a" className="wt-lant-lit" />
+            <path d={`M${x - 20} ${y - 46} L${x} ${y - 62} L${x + 20} ${y - 46}Z`} fill="#4c6572" />
+            <circle cx={x} cy={y - 65} r="3.4" fill="#8aa2ad" />
+          </g>
+        ))}
+
+        <g className="wt-steps">
+          {[
+            [238, 494],
+            [270, 470],
+            [306, 450],
+            [344, 432],
+            [378, 416],
+          ].map(([x, y], i) => (
+            <g key={i}>
+              <ellipse className="wt-step-ring" cx={x} cy={y + 2} rx="26" ry="8" fill="none" stroke="#bfe8f2" strokeWidth="1.6" />
+              <g className="wt-step">
+                <ellipse cx={x + 3} cy={y + 5} rx="22" ry="8" fill="#03121b" opacity="0.5" />
+                <ellipse cx={x} cy={y} rx="22" ry="8" fill="#5f7a89" />
+                <ellipse cx={x - 3} cy={y - 2} rx="14" ry="4" fill="#8fb0c1" opacity="0.55" />
+              </g>
+            </g>
+          ))}
+        </g>
+
+        {LOTUS.map(lotus).map((l, i) => (
+          <g className="wt-lotus" key={i} data-x={l.x} data-y={l.y} style={{ animationDelay: `${i * -0.9}s` }}>
+            <ellipse className="wt-pad" cx={l.x} cy={l.y + 7} rx={32 * l.s} ry={10 * l.s} fill="#20694f" />
+            <ellipse cx={l.x - 8 * l.s} cy={l.y + 6} rx={10 * l.s} ry={3 * l.s} fill="#2f8f6a" opacity="0.7" />
+            {l.petals.map((d, k) => (
+              <path className="wt-bp" key={`o${k}`} d={d} fill={k % 2 ? '#ff8fbf' : '#ffb3d1'} stroke="#ffd6e7" strokeWidth="1" />
+            ))}
+            {l.inner.map((d, k) => (
+              <path className="wt-bp" key={`i${k}`} d={d} fill={k % 2 ? '#ffd0e2' : '#fff0f6'} />
+            ))}
+            <circle className="wt-bp" cx={l.x} cy={l.y - 4} r={4.4 * l.s} fill="#ffe170" />
+          </g>
+        ))}
+
+        <g className="wt-koi-g">
+          <Koi i={0} />
+          <Koi i={1} />
+          <Koi i={2} />
+        </g>
+
+        <g className="wt-bamboo">
+          {[540, 558, 576, 594].map((x, i) => (
+            <g key={x} style={{ animationDelay: `${i * 0.7}s` }}>
+              <rect x={x - 4} y={96 + i * 22} width="8" height={310 - i * 22} rx="4" fill="#2f6b4a" />
+              <rect x={x - 4} y={96 + i * 22} width="3" height={310 - i * 22} rx="1.5" fill="#4f9a6e" opacity="0.45" />
+              {[160, 220, 280, 340].map((y) => (
+                <rect key={y} x={x - 5} y={y + i * 10} width="10" height="4" rx="2" fill="#1d4f36" />
+              ))}
+              <path d={`M${x} ${130 + i * 22} q-36 -10 -52 14 q32 6 52 -14Z`} fill="#3d8a5c" />
+              <path d={`M${x} ${180 + i * 18} q32 -12 50 10 q-30 8 -50 -10Z`} fill="#3d8a5c" />
+              <path d={`M${x} ${236 + i * 12} q-30 -8 -44 12 q28 6 44 -12Z`} fill="#357a52" />
+            </g>
+          ))}
+        </g>
+
+        <g className="wt-reeds" stroke="#0e3a3a" strokeWidth="3" strokeLinecap="round">
+          {REEDS.map(([x, y], i) => (
+            <g className="wt-reed" key={i} style={{ animationDelay: `${i * -0.8}s` }}>
+              <path d={`M${x} ${y + 14} Q${x - 2} ${y} ${x + 2} ${y - 24}`} fill="none" />
+              <ellipse cx={x + 2} cy={y - 28} rx="3.4" ry="9" fill="#4a2f1c" stroke="none" />
+            </g>
+          ))}
+        </g>
+
+        <rect className="wt-dark" width="600" height="520" fill="#020812" opacity="0.82" pointerEvents="none" />
+
+        <g className="wt-sky-things">
+          <g className="wt-aurora">
+            <path className="wt-aur-a" d="M-30 70 C60 20 150 100 250 56 S420 14 520 66 S640 40 640 40 V0 H-30Z" fill="url(#wt-aur)" />
+            <path className="wt-aur-b" d="M-30 96 C70 56 170 120 270 84 S440 50 560 92 V20 C440 10 300 50 160 26 S20 40 -30 30Z" fill="url(#wt-aur)" opacity="0.7" />
+          </g>
+          <g className="wt-stars" fill="#fff">
+            {stars.map((s, i) => (
+              <circle className="wt-star" key={i} cx={s.x} cy={s.y} r={s.r} style={{ animationDelay: `${s.d}s` }} />
+            ))}
+          </g>
+          <g className="wt-shoot">
+            <path d="M0 0 L-70 26" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
+            <circle r="2.6" fill="#fff" />
+          </g>
+          <g className="wt-moon">
+            <circle cx="470" cy="96" r="120" fill="url(#wt-glowm)" opacity="0.5" />
+            <circle className="wt-moon-ring" cx="470" cy="96" r="58" fill="none" stroke="#fff2c4" strokeWidth="1.4" opacity="0.4" />
+            <circle cx="470" cy="96" r="35" fill="#fff6d6" />
+            <circle cx="459" cy="88" r="7" fill="#f0e2b4" />
+            <circle cx="482" cy="106" r="5" fill="#f0e2b4" />
+            <circle cx="476" cy="80" r="3.4" fill="#f0e2b4" />
+          </g>
+        </g>
+
+        <g className="wt-glows" pointerEvents="none">
+          <circle className="wt-win-glow" cx="298" cy="230" r="54" fill="url(#wt-glow)" />
+          <circle className="wt-halo-glow" cx="445" cy="204" r="112" fill="url(#wt-glowh)" />
+          {[
+            [66, 372],
+            [556, 398],
+          ].map(([x, y], i) => (
+            <circle className="wt-lant-glow" key={i} cx={x} cy={y} r="84" fill="url(#wt-glow)" />
+          ))}
+          {[
+            [398, 332],
+            [494, 332],
+          ].map(([x, y], i) => (
+            <circle className="wt-candle-glow" key={i} cx={x} cy={y} r="38" fill="url(#wt-glow)" />
+          ))}
+          {LOTUS.map((l, i) => (
+            <circle className="wt-lotus-glow" key={i} cx={l.x} cy={l.y - 6} r={48 * l.s} fill="url(#wt-glowp)" />
+          ))}
+        </g>
+
+        <g className="wt-flies">
+          {flies.map((f, i) => (
+            <g className="wt-fly" key={i}>
+              <circle className="wt-fly-in" cx={f.x} cy={f.y} r="2.4" fill="#fff3a8" style={{ animationDelay: `${f.d}s`, animationDuration: `${f.t}s` }} />
+              <circle className="wt-fly-in" cx={f.x} cy={f.y} r="8" fill="url(#wt-glow)" style={{ animationDelay: `${f.d}s`, animationDuration: `${f.t}s` }} />
+            </g>
+          ))}
+        </g>
+
+        <g className="wt-petals">
+          {petals.map((p, i) => (
+            <g className="wt-pf" key={i} style={{ animationDuration: `${p.dur}s`, animationDelay: `${p.del}s`, '--x0': `${p.x}px` }}>
+              <g transform={`scale(${p.s})`}>
+                <path className="wt-pi" d="M0 0 C4 -6 10 -5 11 1 C8 7 2 8 0 0Z" fill="#ffb8d4" style={{ animationDuration: `${p.sway}s` }} />
+              </g>
+            </g>
+          ))}
+        </g>
+      </g>
+
+      <rect width="600" height="520" fill="url(#wt-vig)" pointerEvents="none" />
     </svg>
   )
 }

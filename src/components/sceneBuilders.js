@@ -209,36 +209,135 @@ function seasonal(root) {
   return tl
 }
 
-/* 5. Water and stone: moonrise, waterfall, a glowing statue, lotus and koi */
+/* 5. Water and stone: a moonlit garden that wakes up piece by piece */
 function water(root) {
   const q = Q(root)
   const tl = gsap.timeline({ defaults: { ease: 'none' } })
-  const koiPath = q('#wt-koi-path')[0]
-  const koi = q('.wt-koi')
 
-  gsap.set(q('.wt-moon'), { y: 60, opacity: 0 })
-  gsap.set(q('.wt-fallwrap'), { svgOrigin: '186 168', scaleY: 0 })
-  gsap.set(q('.wt-ripples, .wt-mist'), { opacity: 0 })
-  gsap.set(q('.wt-buddha'), { y: 18, opacity: 0 })
-  gsap.set(q('.wt-halo'), { svgOrigin: '0 -136', scale: 0.3, opacity: 0 })
-  gsap.set(koi, { opacity: 0 })
-  gsap.set(q('.wt-firefly'), { opacity: 0 })
-  q('.wt-lotus').forEach((l) => {
-    gsap.set(l.querySelectorAll('.wt-petal'), { svgOrigin: `${l.dataset.x} ${l.dataset.y}`, scale: 0 })
+  const world = q('.wt-world')[0]
+  const rocks = q('.wt-cliff .wt-rock')
+  const islandRocks = q('.wt-isl-rock')
+  const candles = q('.wt-candle')
+  const lotuses = q('.wt-lotus')
+  const koi = q('.wt-koi')
+  const flames = q('.wt-flame')
+  const wins = q('.wt-win')
+  const steps = q('.wt-step')
+  const rings = q('.wt-step-ring')
+
+  /* ---- starting state: a dark, empty night ---- */
+  gsap.set(world, { svgOrigin: '300 330', scale: 1 })
+  gsap.set(q('.wt-dark'), { opacity: 0.68 })
+  gsap.set(q('.wt-stars, .wt-aurora'), { opacity: 0 })
+  gsap.set(q('.wt-moon'), { y: 90, opacity: 0, scale: 0.85, svgOrigin: '470 96' })
+  gsap.set(q('.wt-shoot'), { x: 120, y: 30, opacity: 0 })
+  gsap.set(q('.wt-far, .wt-mid, .wt-pagoda, .wt-mist'), { opacity: 0 })
+  gsap.set(rocks, { y: -90, opacity: 0, scale: 0.8 })
+  gsap.set(islandRocks, { y: -70, opacity: 0, scale: 0.8 })
+  gsap.set(q('.wt-slab'), { scaleX: 0, transformOrigin: '50% 50%' })
+  gsap.set(q('.wt-bonsai, .wt-moss'), { opacity: 0 })
+  gsap.set(q('.wt-fall1'), { svgOrigin: '158 176', scaleY: 0, scaleX: 0.3, opacity: 0 })
+  gsap.set(q('.wt-fall2'), { svgOrigin: '156 262', scaleY: 0, scaleX: 0.3, opacity: 0 })
+  gsap.set(q('.wt-lips, .wt-spray, .wt-refl'), { opacity: 0 })
+  gsap.set(steps, { scale: 0, opacity: 0 })
+  gsap.set(rings, { scale: 0.3, opacity: 0, transformOrigin: '50% 50%' })
+  gsap.set(q('.wt-bud-in'), { y: 26, opacity: 0 })
+  gsap.set(q('.wt-pedestal'), { scale: 0, svgOrigin: '0 4' })
+  gsap.set(q('.wt-halo'), { scale: 0.2, opacity: 0, svgOrigin: '0 -136' })
+  gsap.set(wins, { opacity: 0 })
+  gsap.set(q('.wt-win-glow, .wt-halo-glow, .wt-lant-glow, .wt-candle-glow, .wt-lotus-glow'), { opacity: 0 })
+  gsap.set(q('.wt-lant'), { y: 18, opacity: 0 })
+  gsap.set(candles, { opacity: 0 })
+  flames.forEach((f) => gsap.set(f, { scale: 0, svgOrigin: `${f.dataset.x} ${f.dataset.y}` }))
+  lotuses.forEach((l) => {
     gsap.set(l.querySelector('.wt-pad'), { scale: 0 })
+    gsap.set(l.querySelectorAll('.wt-bp'), { scale: 0, svgOrigin: `${l.dataset.x} ${l.dataset.y}` })
+  })
+  gsap.set(koi, { opacity: 0 })
+  gsap.set(q('.wt-reeds, .wt-bamboo, .wt-petals'), { opacity: 0 })
+  gsap.set(q('.wt-fly'), { opacity: 0 })
+
+  /* ---- koi swim forever once they arrive; the scene can switch them off again ---- */
+  const lanes = [q('#wt-koi-a')[0], q('#wt-koi-a')[0], q('#wt-koi-b')[0]]
+  const swims = koi.map((k, i) =>
+    gsap.to(k, {
+      motionPath: { path: lanes[i], align: lanes[i], alignOrigin: [0.5, 0.5], autoRotate: true, start: i === 1 ? 0.5 : 0, end: (i === 1 ? 0.5 : 0) + 1 },
+      duration: 26 + i * 6,
+      ease: 'none',
+      repeat: -1,
+      paused: true,
+    }),
+  )
+  tl.data = { stop: () => swims.forEach((s) => s.pause(0)) }
+
+  /* ---- the story ---- */
+  // 0 - 0.2: the sky wakes up
+  tl.to(q('.wt-stars'), { opacity: 1, duration: 0.14 }, 0.02)
+    .to(q('.wt-aurora'), { opacity: 1, duration: 0.2 }, 0.05)
+    .to(q('.wt-moon'), { y: 0, opacity: 1, scale: 1, duration: 0.2, ease: 'power2.out' }, 0.05)
+    .to(q('.wt-far, .wt-mid'), { opacity: 1, duration: 0.14 }, 0.1)
+    .to(q('.wt-mist'), { opacity: 1, duration: 0.14 }, 0.14)
+    .to(q('.wt-shoot'), { x: 330, y: 120, opacity: 1, duration: 0.07, ease: 'power1.in' }, 0.22)
+    .to(q('.wt-shoot'), { opacity: 0, duration: 0.03 }, 0.28)
+
+  // 0.12 - 0.42: stones fall into place to build the cliff, then the island
+  tl.to(rocks, { y: 0, opacity: 1, scale: 1, duration: 0.07, ease: 'bounce.out', stagger: 0.011 }, 0.14)
+    .to(q('.wt-bonsai'), { opacity: 1, duration: 0.08 }, 0.36)
+    .to(islandRocks, { y: 0, opacity: 1, scale: 1, duration: 0.07, ease: 'bounce.out', stagger: 0.012 }, 0.28)
+    .to(q('.wt-slab'), { scaleX: 1, duration: 0.07, ease: 'power2.out' }, 0.4)
+    .to(q('.wt-moss'), { opacity: 1, duration: 0.05 }, 0.44)
+
+  // 0.38 - 0.55: the water starts to move: a trickle, then the top fall, then the big one
+  tl.to(q('.wt-lips'), { opacity: 1, duration: 0.04 }, 0.4)
+    .to(q('.wt-fall1'), { scaleY: 1, scaleX: 1, opacity: 1, duration: 0.09, ease: 'power2.in' }, 0.4)
+    .to(q('.wt-fall2'), { scaleY: 1, scaleX: 1, opacity: 1, duration: 0.1, ease: 'power2.in' }, 0.48)
+    .to(q('.wt-spray'), { opacity: 1, duration: 0.08 }, 0.55)
+    .to(q('.wt-refl'), { opacity: 1, duration: 0.1 }, 0.5)
+    .to(q('.wt-dark'), { opacity: 0.5, duration: 0.15 }, 0.4)
+
+  // 0.5 - 0.62: stepping stones pop up across the pond, each with a ripple
+  steps.forEach((s, i) => {
+    const at = 0.52 + i * 0.022
+    tl.to(s, { scale: 1, opacity: 1, duration: 0.04, ease: 'back.out(2.4)' }, at).fromTo(rings[i], { scale: 0.3, opacity: 0.9 }, { scale: 1.8, opacity: 0, duration: 0.07, ease: 'power1.out' }, at)
   })
 
-  tl.to(q('.wt-moon'), { y: 0, opacity: 1, duration: 0.2, ease: 'power2.out' }, 0)
-    .to(q('.wt-fallwrap'), { scaleY: 1, duration: 0.22, ease: 'power1.in' }, 0.1)
-    .to(q('.wt-ripples, .wt-mist'), { opacity: 1, duration: 0.15 }, 0.26)
-    .to(q('.wt-buddha'), { y: 0, opacity: 1, duration: 0.2, ease: 'power2.out' }, 0.3)
-    .to(q('.wt-halo'), { scale: 1, opacity: 1, duration: 0.26, ease: 'power2.out' }, 0.4)
-    .to(q('.wt-pad'), { scale: 1, duration: 0.1, ease: 'back.out(2)', stagger: 0.06 }, 0.5)
-    .to(q('.wt-petal'), { scale: 1, duration: 0.12, ease: 'back.out(2)', stagger: 0.008 }, 0.56)
-    .to(koi, { opacity: 1, duration: 0.04 }, 0.62)
-    .to(koi[0], { motionPath: { path: koiPath, align: koiPath, alignOrigin: [0.5, 0.5], autoRotate: true, start: 0, end: 0.9 }, duration: 0.38 }, 0.62)
-    .to(koi[1], { motionPath: { path: koiPath, align: koiPath, alignOrigin: [0.5, 0.5], autoRotate: true, start: 0.5, end: 1.4 }, duration: 0.38 }, 0.62)
-    .to(q('.wt-firefly'), { opacity: 1, duration: 0.08, stagger: 0.01 }, 0.76)
+  // 0.56 - 0.72: the statue appears and its halo opens
+  tl.to(q('.wt-pedestal'), { scale: 1, duration: 0.06, ease: 'back.out(2.4)' }, 0.58)
+    .to(q('.wt-bud-in'), { y: 0, opacity: 1, duration: 0.09, ease: 'power2.out' }, 0.6)
+    .to(q('.wt-halo'), { scale: 1, opacity: 1, duration: 0.12, ease: 'power2.out' }, 0.66)
+    .to(q('.wt-halo-glow'), { opacity: 1, duration: 0.12 }, 0.66)
+
+  // 0.62 - 0.8: lights come on one by one: pagoda windows, candles, lanterns
+  tl.to(q('.wt-pagoda'), { opacity: 1, duration: 0.05 }, 0.6)
+  wins.forEach((w, i) => tl.to(w, { opacity: 1, duration: 0.03 }, 0.66 + i * 0.03))
+  tl.to(q('.wt-win-glow'), { opacity: 1, duration: 0.08 }, 0.7)
+    .to(candles, { opacity: 1, duration: 0.04, stagger: 0.03 }, 0.7)
+    .to(flames, { scale: 1, duration: 0.05, ease: 'back.out(3)', stagger: 0.03 }, 0.73)
+    .to(q('.wt-candle-glow'), { opacity: 1, duration: 0.06, stagger: 0.03 }, 0.73)
+    .to(q('.wt-lant'), { y: 0, opacity: 1, duration: 0.06, ease: 'power2.out', stagger: 0.05 }, 0.74)
+    .to(q('.wt-lant-glow'), { opacity: 1, duration: 0.08, stagger: 0.05 }, 0.77)
+    .to(q('.wt-dark'), { opacity: 0.3, duration: 0.14 }, 0.66)
+
+  // 0.7 - 0.86: lotuses bloom, each lighting the water around it
+  lotuses.forEach((l, i) => {
+    const at = 0.72 + i * 0.026
+    tl.to(l.querySelector('.wt-pad'), { scale: 1, duration: 0.04, ease: 'back.out(2)' }, at)
+      .to(l.querySelectorAll('.wt-bp'), { scale: 1, duration: 0.07, ease: 'back.out(1.8)', stagger: 0.006 }, at + 0.02)
+  })
+  tl.to(q('.wt-lotus-glow'), { opacity: 1, duration: 0.08, stagger: 0.026 }, 0.74)
+
+  // 0.8 - 1: life arrives: koi, reeds, bamboo, fireflies, drifting blossom
+  tl.to(koi, { opacity: 1, duration: 0.05, stagger: 0.03 }, 0.82)
+    .add(() => swims.forEach((s) => s.play()), 0.82)
+    .to(q('.wt-reeds, .wt-bamboo'), { opacity: 1, duration: 0.08 }, 0.8)
+    .to(q('.wt-petals'), { opacity: 1, duration: 0.1 }, 0.86)
+    .to(q('.wt-fly'), { opacity: 1, duration: 0.06, stagger: 0.008 }, 0.84)
+    .to(q('.wt-dark'), { opacity: 0.14, duration: 0.12 }, 0.88)
+
+  // the whole scene drifts forward slowly, like a camera easing in
+  tl.to(world, { scale: 1.07, duration: 1, ease: 'sine.inOut' }, 0)
+    .to(q('.wt-far'), { x: -10, duration: 1 }, 0)
+    .to(q('.wt-mid'), { x: -18, duration: 1 }, 0)
   return tl
 }
 

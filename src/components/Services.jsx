@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger)
 const N = SERVICES.length
 const pad = (n) => String(n).padStart(2, '0')
 // How long each scene plays once its service arrives, in seconds.
-const SECONDS = { design: 9, planting: 8, lawn: 8, seasonal: 9, water: 9, care: 8 }
+const SECONDS = { design: 9, planting: 8, lawn: 8, seasonal: 9, water: 13, care: 8 }
 
 // Like scrolling reels: while this section is on screen, one scroll (or swipe, or arrow key)
 // slides to the next service and its animation plays by itself. Scroll again for the next one.
@@ -87,8 +87,13 @@ export default function Services() {
         gsap.fromTo(incoming.frame, { y: dir * 60, scale: 0.92, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.9, ease: 'power3.out', delay: prev >= 0 ? 0.35 : 0.1, overwrite: true })
 
         // The animation starts as the slide settles, then plays through on its own.
-        scenes.forEach((tl, k) => k !== i && tl.pause(0))
+        scenes.forEach((tl, k) => {
+          if (k === i) return
+          tl.pause(0)
+          tl.data?.stop?.()
+        })
         scenes[i].pause(0)
+        scenes[i].data?.stop?.()
         timers.push(gsap.delayedCall(prev >= 0 ? 0.9 : 0.7, () => scenes[i].play()))
         timers.push(gsap.delayedCall(1, () => (busy = false)))
         timers.push(
