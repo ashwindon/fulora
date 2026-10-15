@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import './Nav.css'
 
 const links = [
@@ -8,8 +9,17 @@ const links = [
 ]
 
 export default function Nav() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <header className="nav">
+    <header className={`nav${scrolled ? ' scrolled' : ''}`}>
       <a className="nav-logo" href="#top" aria-label="Fulora home">
         <svg viewBox="-16 -16 32 32" width="30" height="30" aria-hidden="true">
           <g fill="#ff6f4d">

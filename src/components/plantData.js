@@ -1,0 +1,48 @@
+// Service plants: copy, colours and where each plant's stem ends and its flower sits.
+export const PLANTS = [
+  {
+    id: 'design',
+    name: 'Garden design',
+    line: 'Your garden, drawn with more love than a wedding seating plan.',
+    tags: ['Site visit', 'Planting plan', 'Colour palette'],
+    color: '#8e6bd1',
+    top: 150,
+    bloom: [100, 110],
+  },
+  {
+    id: 'planting',
+    name: 'Planting and beds',
+    line: 'We do the digging. You take the credit.',
+    tags: ['Beds and borders', 'Trees and shrubs', 'Bulbs'],
+    color: '#ff6f4d',
+    top: 175,
+    bloom: [100, 150],
+  },
+  {
+    id: 'lawn',
+    name: 'Lawn care',
+    line: 'Lawn care: the neighbours will be jealous.',
+    tags: ['Mowing', 'Feeding', 'Re-seeding'],
+    color: '#4fa65a',
+    top: 225,
+    bloom: [118, 212],
+  },
+  {
+    id: 'seasonal',
+    name: 'Seasonal colour',
+    line: 'Four seasons, zero sad patches.',
+    tags: ['Spring bulbs', 'Summer pots', 'Winter pansies'],
+    color: '#d946a8',
+    top: 160,
+    bloom: [100, 140],
+  },
+  {
+    id: 'care',
+    name: 'Garden care',
+    line: 'Weeding so you don’t have to. Yes, even the sneaky ones.',
+    tags: ['Pruning', 'Weeding', 'Watering plans'],
+    color: '#1f9d77',
+    top: 160,
+    bloom: [104, 168],
+  },
+]

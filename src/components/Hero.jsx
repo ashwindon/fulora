@@ -157,6 +157,8 @@ export default function Hero() {
     gsap.to(document.documentElement, {
       '--accent': cfg.accent,
       '--accent-dark': cfg.accentDark,
+      '--soil': cfg.vars['--soil'],
+      '--soil-dark': cfg.vars['--soil-dark'],
       duration: dur,
       ease: 'power2.inOut',
       overwrite: 'auto',
@@ -300,7 +302,9 @@ export default function Hero() {
         </g>
       </svg>
 
-      <p className="scroll-cue">scroll to grow</p>
+      <a className="scroll-cue" href="#services">
+        scroll to grow
+      </a>
 
       <SeasonSwitch season={season} onChange={setSeason} ready={bloomed} />
 

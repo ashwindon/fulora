@@ -9,6 +9,14 @@
   justify-content: space-between;
   gap: 24px;
   padding: 18px clamp(20px, 5vw, 80px);
+  transition: background 0.4s ease, padding 0.4s ease, box-shadow 0.4s ease;
+}
+.nav.scrolled {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: rgba(255, 246, 223, 0.88);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(63, 38, 21, 0.12);
 }
 
 .nav-logo {
