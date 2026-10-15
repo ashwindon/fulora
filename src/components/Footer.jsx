@@ -11,7 +11,7 @@ const LINKS = [
 const SOCIAL = {
   Instagram: 'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM17.5 6.5v.01',
   Facebook: 'M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8.5A.5.5 0 0 1 14 8z',
-  Pinterest: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM11 17V8h2.5a2.2 2.2 0 0 1 0 4.4H11',
+  YouTube: 'M3 8a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM10 9l5 3-5 3z',
 }
 
 const todayYear = new Date().getFullYear()

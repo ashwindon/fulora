@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { deliver } from './submit.js'
 
 const SIZES = ['Small (a courtyard or balcony)', 'Medium (a typical back garden)', 'Large (lots of room)', 'Not sure yet']
 const TIMINGS = ['As soon as possible', 'Within three months', 'Next season', 'Just dreaming for now']
@@ -6,8 +7,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const EMPTY = { name: '', email: '', phone: '', postcode: '', size: '', timing: '', notes: '', company: '' }
 
-// Sends the request to VITE_QUOTE_ENDPOINT when one is set (any service that accepts a JSON POST).
-// Without it the form runs in demo mode: it validates, shows the success state and logs the payload.
+// The request is emailed to the owner through submit.js (see README.md, "Getting form emails").
 export default function QuoteForm({ items, mood, onEdit }) {
   const [values, setValues] = useState(EMPTY)
   const [errors, setErrors] = useState({})
@@ -28,22 +28,34 @@ export default function QuoteForm({ items, mood, onEdit }) {
     if (Object.keys(next).length) return
 
     setStatus('sending')
-    const { company: _company, ...contact } = values
-    const payload = {
-      ...contact,
-      mood,
-      garden: items.map((i) => ({ plant: i.name, x: Math.round(i.x), y: Math.round(i.y), size: +i.s.toFixed(2), rotation: Math.round(i.r) })),
-      sentAt: new Date().toISOString(),
-    }
+    const counts = {}
+    items.forEach((i) => (counts[i.name] = (counts[i.name] || 0) + 1))
+    const lines = [
+      'New garden quote request from the website',
+      '',
+      `Name: ${values.name.trim()}`,
+      `Email: ${values.email.trim()}`,
+      `Phone: ${values.phone.trim() || 'not given'}`,
+      `Postcode or area: ${values.postcode.trim() || 'not given'}`,
+      `Garden size: ${values.size || 'not given'}`,
+      `When: ${values.timing || 'not given'}`,
+      `Notes: ${values.notes.trim() || 'none'}`,
+      '',
+      `Garden style they drew: ${mood || 'nothing placed yet'}`,
+      `What they placed (${items.length}): ${Object.entries(counts).map(([n, c]) => `${c} x ${n}`).join(', ') || 'nothing'}`,
+      '',
+      'Layout (name, position on an 800 x 520 plot, size, turn):',
+      ...items.map((i) => `- ${i.name} at (${Math.round(i.x)}, ${Math.round(i.y)}), size ${i.s.toFixed(2)}, turned ${Math.round(i.r)} degrees`),
+    ]
     try {
-      const endpoint = import.meta.env.VITE_QUOTE_ENDPOINT
-      if (endpoint) {
-        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-      } else {
-        await new Promise((r) => setTimeout(r, 900))
-        console.info('[Fulora] quote request (demo mode, nothing was sent)', payload)
-      }
+      await deliver({
+        subject: `Garden quote request from ${values.name.trim()}`,
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+        message: lines.join('\n'),
+        data: { ...values, company: undefined, mood, garden: items },
+      })
       setStatus('sent')
     } catch {
       setStatus('failed')

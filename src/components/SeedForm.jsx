@@ -1,10 +1,10 @@
 import { useState } from 'react'
+import { deliver } from './submit.js'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const EMPTY = { name: '', email: '', message: '', company: '' }
 
-// Posts to VITE_CONTACT_ENDPOINT (or VITE_QUOTE_ENDPOINT) when set. Without one it runs in demo
-// mode: it validates, plays the success animation and logs the message instead of sending it.
+// The message is emailed to the owner through submit.js (see README.md, "Getting form emails").
 export default function SeedForm() {
   const [values, setValues] = useState(EMPTY)
   const [errors, setErrors] = useState({})
@@ -26,16 +26,17 @@ export default function SeedForm() {
     if (Object.keys(next).length) return
 
     setStatus('sending')
-    const payload = { type: 'contact', name: values.name.trim(), email: values.email.trim(), message: values.message.trim(), sentAt: new Date().toISOString() }
+    const name = values.name.trim()
+    const email = values.email.trim()
+    const message = values.message.trim()
     try {
-      const endpoint = import.meta.env.VITE_CONTACT_ENDPOINT || import.meta.env.VITE_QUOTE_ENDPOINT
-      if (endpoint) {
-        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-      } else {
-        await new Promise((r) => setTimeout(r, 900))
-        console.info('[Fulora] message (demo mode, nothing was sent)', payload)
-      }
+      await deliver({
+        subject: `New message from ${name} (Fulora website)`,
+        name,
+        email,
+        message: ['New message from the website contact form', '', `Name: ${name}`, `Email: ${email}`, '', message].join('\n'),
+        data: { name, email, message },
+      })
       setStatus('sent')
     } catch {
       setStatus('failed')

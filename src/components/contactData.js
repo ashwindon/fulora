@@ -1,27 +1,25 @@
-// PLACEHOLDER DETAILS: swap every value in here for the real business details.
-// The phone number is a fictional 555-01xx number and the email uses the reserved
-// .example domain, so nothing here can reach a real person by accident.
+// The business details shown across the site. Only the opening hours below are still placeholders.
 
 export const CONTACT = {
-  email: 'hello@fulora.example',
-  phone: '+1 (555) 010-0199',
-  phoneHref: '+15550100199',
-  whatsapp: '15550100199',
-  address: ['12 Marigold Lane', 'Greenfield'],
-  area: 'Greenfield and about 30 km around it',
-  // The business's time zone, like 'Europe/London'. Leave empty to use the visitor's own clock.
-  timeZone: '',
+  email: 'fuloranursery@gmail.com',
+  phone: '080104 81393',
+  phoneHref: '+918010481393',
+  whatsapp: '918010481393',
+  address: ['161, Hadapsar, Laxmi Vihar', 'Hadapsar, Pune, Maharashtra 411028'],
+  area: 'Hadapsar, Pune and nearby areas',
+  // The business's time zone, so the "open now" badge uses its clock, not the visitor's.
+  timeZone: 'Asia/Kolkata',
+  // PLACEHOLDER HOURS: replace with the real opening hours.
   // open / close are whole hours in 24-hour time. `open: null` means closed that day.
   hours: [
     { label: 'Monday to Friday', days: ['mon', 'tue', 'wed', 'thu', 'fri'], open: 8, close: 17 },
     { label: 'Saturday', days: ['sat'], open: 9, close: 14 },
     { label: 'Sunday', days: ['sun'], open: null, close: null },
   ],
-  // Generic site addresses stand in for the real profiles. Replace with the real links.
   socials: [
-    { name: 'Instagram', href: 'https://www.instagram.com/' },
-    { name: 'Facebook', href: 'https://www.facebook.com/' },
-    { name: 'Pinterest', href: 'https://www.pinterest.com/' },
+    { name: 'Facebook', href: 'https://www.facebook.com/fuloranursery/' },
+    { name: 'Instagram', href: 'https://www.instagram.com/fulora_nursery/' },
+    { name: 'YouTube', href: 'https://www.youtube.com/@fuloranursery3436' },
   ],
 }
 
