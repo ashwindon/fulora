@@ -242,49 +242,82 @@ function water(root) {
   return tl
 }
 
-/* 6. Garden care: shears sweep the shaggy bush into shape, weeds pop out */
+/* 6. Garden care: big shears sweep the row and the overgrowth shrinks away behind them */
 function care(root) {
   const q = Q(root)
   const tl = gsap.timeline({ defaults: { ease: 'none' } })
   const shears = q('.cr-shears')[0]
+  const shrubs = q('.cr-shrub')
+  const domes = q('.cr-dome')
   const leaves = q('.cr-leaf')
   const weeds = q('.cr-weed')
+  const snips = q('.cr-snip')
   const sparkles = q('.cr-sparkle')
-  const start = 0.12
-  const span = 0.58
+  const start = 0.1
+  const span = 0.62
+  const x0 = 18
+  const x1 = 560
+  const win = span / shrubs.length
 
-  gsap.set(q('.cr-clip-neat'), { attr: { width: 0 } })
-  gsap.set(q('.cr-clip-shag'), { attr: { x: 0, width: 600 } })
-  gsap.set(shears, { x: -70, y: 250 })
+  gsap.set(shears, { x: -170, y: 90 })
   gsap.set(q('.cr-blade-a'), { svgOrigin: '0 0', rotation: -2 })
   gsap.set(q('.cr-blade-b'), { svgOrigin: '0 0', rotation: 2 })
+  domes.forEach((d) => gsap.set(d, { svgOrigin: `${d.dataset.cx} 392`, opacity: 0, scaleY: 0.85, scaleX: 0.95 }))
+  gsap.set(q('.cr-heap'), { svgOrigin: '62 446', scale: 0.05 })
   gsap.set(leaves, { opacity: 0 })
+  gsap.set(snips, { opacity: 0, scale: 0 })
   gsap.set(sparkles, { scale: 0 })
 
-  tl.to(q('.cr-clip-neat'), { attr: { width: 600 }, duration: span }, start)
-    .to(q('.cr-clip-shag'), { attr: { x: 600, width: 0 }, duration: span }, start)
-    .to(shears, { x: 542, duration: span }, start)
-    .to(shears, { y: 330, duration: span / 6, repeat: 5, yoyo: true, ease: 'sine.inOut' }, start)
-    .to(q('.cr-blade-a'), { rotation: -22, duration: span / 16, repeat: 15, yoyo: true }, start)
-    .to(q('.cr-blade-b'), { rotation: 22, duration: span / 16, repeat: 15, yoyo: true }, start)
-    .to(shears, { x: 700, y: 200, duration: 0.06, ease: 'power2.in' }, start + span)
+  // The shears fly in, then sweep the row left to right, bobbing between the tops and the bases.
+  tl.to(shears, { x: x0, y: 345, duration: start, ease: 'power2.out' }, 0)
+    .to(shears, { x: x1, duration: span }, start)
+    .to(shears, { y: 225, duration: span / 10, repeat: 9, yoyo: true, ease: 'sine.inOut' }, start)
+    .to(shears, { rotation: -8, duration: span / 10, repeat: 9, yoyo: true, ease: 'sine.inOut' }, start)
+    .to(q('.cr-blade-a'), { rotation: -22, duration: span / 40, repeat: 39, yoyo: true }, start)
+    .to(q('.cr-blade-b'), { rotation: 22, duration: span / 40, repeat: 39, yoyo: true }, start)
+    .to(q('.cr-glint'), { scale: 1.9, duration: span / 40, repeat: 39, yoyo: true }, start)
+    .to(shears, { x: 860, y: -30, rotation: 18, duration: 0.07, ease: 'power2.in' }, start + span)
+    .to(q('.cr-bird'), { x: 170, y: -130, rotation: -25, opacity: 0, duration: 0.1, ease: 'power2.in' }, start + 0.02)
+    .to(q('.cr-heap'), { scale: 1, duration: span, ease: 'power1.out' }, start)
 
+  // Each shrub: shoots go first, then the leafy blobs shrink from the top down, then the neat dome is left.
+  shrubs.forEach((sh, k) => {
+    const w0 = start + win * k
+    const blobs = gsap.utils.toArray('.cr-blob', sh)
+    const ys = blobs.map((b) => +b.getAttribute('cy'))
+    const minY = Math.min(...ys)
+    const range = Math.max(...ys) - minY || 1
+    blobs.forEach((b, i) => {
+      const norm = (ys[i] - minY) / range
+      tl.to(b, { scale: 0, duration: 0.045, ease: 'power2.in' }, w0 + win * (0.08 + 0.7 * norm) + (i % 3) * 0.004)
+    })
+    tl.to(gsap.utils.toArray('.cr-shoot', sh), { scale: 0, duration: 0.04, ease: 'power2.in', stagger: 0.006 }, w0 + win * 0.04)
+      .to(domes[k], { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.06, ease: 'back.out(2)' }, w0 + win * 0.1)
+      .to(sh.querySelector('.cr-base'), { scale: 0, duration: 0.05, ease: 'power2.in' }, w0 + win * 0.82)
+    tl.to(snips[k], { scale: 1, opacity: 1, y: -14, duration: 0.025, ease: 'back.out(3)' }, w0 + win * 0.35).to(
+      snips[k],
+      { opacity: 0, y: -30, duration: 0.03 },
+      w0 + win * 0.35 + 0.035,
+    )
+  })
+
+  // Clippings tumble down as the shears pass.
   leaves.forEach((lf, i) => {
     const f = (i + 0.5) / leaves.length
     const at = start + span * f
-    const px = f * 600
-    const py = 270 + (i % 2 ? 36 : -30)
-    tl.set(lf, { x: px, y: py, opacity: 1, rotation: 0 }, at).to(
-      lf,
-      { y: py + 130 + (i % 3) * 16, x: px + (i % 2 ? 26 : -26), rotation: (i % 2 ? 1 : -1) * 240, opacity: 0, duration: 0.07, ease: 'power1.in' },
-      at,
-    )
+    const px = x0 + (x1 - x0) * f
+    const py = 300 + ((i % 3) - 1) * 50
+    const dir = i % 2 ? 1 : -1
+    tl.set(lf, { x: px, y: py, opacity: 1, rotation: 0 }, at)
+      .to(lf, { y: 400 + (i % 4) * 6, x: px + dir * (18 + (i % 5) * 5), rotation: dir * (180 + (i % 4) * 40), duration: 0.06, ease: 'power1.in' }, at)
+      .to(lf, { opacity: 0, duration: 0.03 }, at + 0.05)
   })
+
   weeds.forEach((w, i) => {
-    const at = 0.76 + i * 0.03
-    tl.to(w, { y: 8, duration: 0.015, ease: 'power1.out' }, at).to(w, { y: -150, rotation: i % 2 ? 24 : -24, opacity: 0, duration: 0.05, ease: 'power2.in' }, at + 0.015)
+    const at = 0.78 + i * 0.03
+    tl.to(w, { y: 8, duration: 0.015, ease: 'power1.out' }, at).to(w, { y: -170, rotation: i % 2 ? 24 : -24, opacity: 0, duration: 0.05, ease: 'power2.in' }, at + 0.015)
   })
-  tl.to(sparkles, { scale: 1, rotation: 90, duration: 0.06, ease: 'back.out(3)', stagger: 0.02 }, 0.9)
+  tl.to(sparkles, { scale: 1, rotation: 90, duration: 0.06, ease: 'back.out(3)', stagger: 0.02 }, 0.93)
   return tl
 }
 

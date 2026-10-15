@@ -661,21 +661,21 @@ export function WaterScene() {
 }
 
 /* ------------------------------------------------------------------ */
-/* 6. Garden care: a shaggy hedge row snipped into one neat line       */
+/* 6. Garden care: big shears trim a shaggy hedge row into one line    */
 /* ------------------------------------------------------------------ */
 
 const GREENS = ['#3f9a4a', '#4aa35c', '#5db35a', '#2f7d3e']
 const ROW = [108, 204, 300, 396, 492]
-const WEEDS = [78, 176, 306, 430, 528]
+const WEEDS = [210, 306, 402, 478, 542]
 
 export function CareScene() {
   const rnd = seeded(77)
   const heights = [1.1, 0.82, 1.28, 0.95, 1.18]
   const shrubs = ROW.map((cx, k) => {
     const h = heights[k]
-    const blobs = Array.from({ length: 20 }, () => {
+    const blobs = Array.from({ length: 22 }, () => {
       const y = 392 - 10 - rnd() * 150 * h
-      return { x: cx + (rnd() - 0.5) * (112 + (392 - y) * 0.12), y, r: 17 + rnd() * 15, c: GREENS[Math.floor(rnd() * 4)] }
+      return { x: cx + (rnd() - 0.5) * (116 + (392 - y) * 0.12), y, r: 17 + rnd() * 15, c: GREENS[Math.floor(rnd() * 4)] }
     }).sort((a, b) => a.y - b.y)
     const shoots = Array.from({ length: 4 }, () => {
       const x = cx + (rnd() - 0.5) * 96
@@ -691,12 +691,6 @@ export function CareScene() {
           <stop offset="0" stopColor="#bfe6fb" />
           <stop offset="1" stopColor="#f4fbff" />
         </linearGradient>
-        <clipPath id="cr-neat-clip">
-          <rect className="cr-clip-neat" x="0" y="0" width="0" height="520" />
-        </clipPath>
-        <clipPath id="cr-shag-clip">
-          <rect className="cr-clip-shag" x="0" y="0" width="600" height="520" />
-        </clipPath>
       </defs>
       <rect width="600" height="400" fill="url(#cr-sky)" />
       <circle cx="510" cy="64" r="26" fill="#ffe45c" />
@@ -713,76 +707,109 @@ export function CareScene() {
       <rect y="276" width="600" height="9" fill="#b88b5a" />
       <rect y="352" width="600" height="9" fill="#b88b5a" />
 
+      <g className="cr-bird">
+        <ellipse cx="556" cy="236" rx="11" ry="8" fill="#e8426b" />
+        <circle cx="565" cy="230" r="6" fill="#e8426b" />
+        <path d="M570 229 L578 231 L570 233Z" fill="#ffb627" />
+        <path d="M546 238 L534 246 L548 242Z" fill="#a82a4b" />
+        <circle cx="567" cy="228" r="1.6" fill="#222" />
+      </g>
+
       <rect y="392" width="600" height="128" fill="#78c47a" />
       {Array.from({ length: 6 }, (_, i) => (
         <rect key={i} y={392 + i * 22} width="600" height="11" fill="#86d088" opacity="0.7" />
       ))}
       <ellipse cx="300" cy="396" rx="286" ry="12" fill="rgba(20,50,20,0.25)" />
 
-      <g clipPath="url(#cr-shag-clip)">
-        <g className="cr-shaggy">
-          {shrubs.map((s) => (
-            <g key={s.cx}>
-              <ellipse cx={s.cx} cy="352" rx="64" ry={44 * s.h} fill="#2f7d3e" />
-              {s.shoots.map((t, i) => (
-                <g key={i}>
-                  <line x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="#4aa35c" strokeWidth="3.5" strokeLinecap="round" />
-                  <circle cx={t.x2} cy={t.y2} r="6.5" fill="#79c46a" />
-                </g>
-              ))}
-              {s.blobs.map((b, i) => (
-                <circle key={i} cx={b.x} cy={b.y} r={b.r} fill={b.c} />
-              ))}
-            </g>
-          ))}
-        </g>
+      <g className="cr-neat">
+        {ROW.map((cx, k) => (
+          <g className="cr-dome" key={cx} data-cx={cx}>
+            <path d={`M${cx - 48} 392V312A48 48 0 0 1 ${cx + 48} 312V392Z`} fill={k % 2 ? '#4aa35c' : '#3f9a4a'} />
+            <path d={`M${cx - 36} 322A38 38 0 0 1 ${cx - 10} 280`} fill="none" stroke="#9bd88a" strokeWidth="5" strokeLinecap="round" opacity="0.65" />
+            {[
+              [-22, 350],
+              [14, 336],
+              [26, 366],
+              [-30, 372],
+              [2, 300],
+            ].map(([dx, y], i) => (
+              <circle key={i} cx={cx + dx} cy={y} r="3.4" fill="#79c46a" opacity="0.55" />
+            ))}
+          </g>
+        ))}
       </g>
 
-      <g clipPath="url(#cr-neat-clip)">
-        <g className="cr-neat">
-          {ROW.map((cx, k) => (
-            <g key={cx}>
-              <path d={`M${cx - 48} 392V312A48 48 0 0 1 ${cx + 48} 312V392Z`} fill={k % 2 ? '#4aa35c' : '#3f9a4a'} />
-              <path d={`M${cx - 36} 322A38 38 0 0 1 ${cx - 10} 280`} fill="none" stroke="#9bd88a" strokeWidth="5" strokeLinecap="round" opacity="0.65" />
-              {[
-                [-22, 350],
-                [14, 336],
-                [26, 366],
-                [-30, 372],
-                [2, 300],
-              ].map(([dx, y], i) => (
-                <circle key={i} cx={cx + dx} cy={y} r="3.4" fill="#79c46a" opacity="0.55" />
-              ))}
-            </g>
-          ))}
+      <g className="cr-shaggy">
+        {shrubs.map((s) => (
+          <g className="cr-shrub" key={s.cx} data-cx={s.cx}>
+            <ellipse className="cr-base" cx={s.cx} cy="352" rx="64" ry={44 * s.h} fill="#2f7d3e" />
+            {s.shoots.map((t, i) => (
+              <g className="cr-shoot" key={i}>
+                <line x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="#4aa35c" strokeWidth="3.5" strokeLinecap="round" />
+                <circle cx={t.x2} cy={t.y2} r="6.5" fill="#79c46a" />
+              </g>
+            ))}
+            {s.blobs.map((b, i) => (
+              <circle className="cr-blob" key={i} cx={b.x} cy={b.y} r={b.r} fill={b.c} />
+            ))}
+          </g>
+        ))}
+      </g>
+
+      <g className="cr-barrow">
+        <g className="cr-heap">
+          <ellipse cx="62" cy="436" rx="34" ry="16" fill="#4aa35c" />
+          <ellipse cx="82" cy="430" rx="26" ry="14" fill="#5db35a" />
+          <ellipse cx="50" cy="428" rx="22" ry="12" fill="#3f9a4a" />
+          <ellipse cx="70" cy="422" rx="18" ry="10" fill="#79c46a" />
         </g>
+        <path d="M24 438 H104 L94 468 H36Z" fill="#c9714a" stroke="#8f4f2e" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M104 440 L136 428 M36 452 L12 478" stroke="#8f4f2e" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="94" cy="478" r="13" fill="#3b3b3b" />
+        <circle cx="94" cy="478" r="5" fill="#9aa5ae" />
       </g>
 
       {WEEDS.map((x, i) => (
         <g className="cr-weed" key={x} data-x={x} style={{ '--i': i }}>
-          <path d={`M${x} 456 q-14 -18 -22 -34 M${x} 456 q4 -22 2 -42 M${x} 456 q14 -16 24 -30`} fill="none" stroke="#5f9f3f" strokeWidth="4" strokeLinecap="round" />
-          <circle cx={x + 2} cy="412" r="6" fill="#ff8fbf" />
-          <circle cx={x - 22} cy="420" r="4.5" fill="#5f9f3f" />
-          <circle cx={x + 24} cy="426" r="4.5" fill="#5f9f3f" />
+          <path d={`M${x} 470 q-14 -18 -22 -34 M${x} 470 q4 -22 2 -42 M${x} 470 q14 -16 24 -30`} fill="none" stroke="#5f9f3f" strokeWidth="4" strokeLinecap="round" />
+          <circle cx={x + 2} cy="426" r="6" fill="#ff8fbf" />
+          <circle cx={x - 22} cy="434" r="4.5" fill="#5f9f3f" />
+          <circle cx={x + 24} cy="440" r="4.5" fill="#5f9f3f" />
         </g>
       ))}
 
-      {Array.from({ length: 16 }, (_, i) => (
-        <path className="cr-leaf" key={i} d="M0 0 C6 -6 14 -6 16 0 C10 6 4 6 0 0Z" fill={GREENS[i % 4]} />
+      {Array.from({ length: 26 }, (_, i) => (
+        <path className="cr-leaf" key={i} d="M0 0 C8 -8 18 -8 21 0 C13 8 5 8 0 0Z" fill={GREENS[i % 4]} />
+      ))}
+
+      {[
+        [150, 226],
+        [250, 214],
+        [352, 222],
+        [452, 214],
+        [528, 226],
+      ].map(([x, y], i) => (
+        <text className="cr-snip" key={i} x={x} y={y} fontSize="28" fill="#e8426b" style={hand}>
+          snip!
+        </text>
       ))}
 
       <g className="cr-shears">
-        <g className="cr-blade-a">
-          <path d="M-6 -2 L58 -8 L58 -3 L-6 4Z" fill="#dfe6ec" stroke="#8796a1" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M-6 0 L-34 -16" stroke="#8796a1" strokeWidth="5" strokeLinecap="round" />
-          <circle cx="-42" cy="-20" r="10" fill="none" stroke="#e8426b" strokeWidth="5" />
+        <ellipse cx="30" cy="62" rx="64" ry="9" fill="rgba(0,0,0,0.18)" />
+        <g transform="scale(1.9)">
+          <g className="cr-blade-a">
+            <path d="M-6 -2 L58 -8 L58 -3 L-6 4Z" fill="#eef3f6" stroke="#6f7f8b" strokeWidth="1.4" strokeLinejoin="round" />
+            <path d="M-6 0 L-34 -16" stroke="#6f7f8b" strokeWidth="5" strokeLinecap="round" />
+            <circle cx="-42" cy="-20" r="10" fill="none" stroke="#e8426b" strokeWidth="5" />
+          </g>
+          <g className="cr-blade-b">
+            <path d="M-6 2 L58 8 L58 3 L-6 -4Z" fill="#cfd8de" stroke="#6f7f8b" strokeWidth="1.4" strokeLinejoin="round" />
+            <path d="M-6 0 L-34 16" stroke="#6f7f8b" strokeWidth="5" strokeLinecap="round" />
+            <circle cx="-42" cy="20" r="10" fill="none" stroke="#e8426b" strokeWidth="5" />
+          </g>
+          <circle cx="-2" cy="0" r="4" fill="#4b5a66" />
         </g>
-        <g className="cr-blade-b">
-          <path d="M-6 2 L58 8 L58 3 L-6 -4Z" fill="#c4ced6" stroke="#8796a1" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M-6 0 L-34 16" stroke="#8796a1" strokeWidth="5" strokeLinecap="round" />
-          <circle cx="-42" cy="20" r="10" fill="none" stroke="#e8426b" strokeWidth="5" />
-        </g>
-        <circle cx="-2" cy="0" r="4" fill="#5b6b78" />
+        <circle className="cr-glint" cx="106" cy="0" r="6" fill="#fff" />
       </g>
 
       {[
