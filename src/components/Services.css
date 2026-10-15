@@ -200,20 +200,9 @@
 .sv-hint svg {
   animation: sv-bob 1.6s ease-in-out infinite;
 }
-.sv-hint-touch {
-  display: none;
-}
 @keyframes sv-bob {
   50% {
     transform: translateY(5px);
-  }
-}
-@media (hover: none) {
-  .sv-hint-desktop {
-    display: none;
-  }
-  .sv-hint-touch {
-    display: inline;
   }
 }
 
@@ -249,21 +238,40 @@
   background: #ffe9a8;
 }
 
-/* ---------- phones and small tablets ---------- */
+/* ---------- phones and touch tablets: an ordinary scrolling list ---------- */
+/* Keep the query below in step with LIST_QUERY in Services.jsx. */
 
-@media (max-width: 900px) {
-  .sv-panel {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-content: center;
-    gap: 18px;
-    padding: 74px 20px 78px;
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .sv-pin {
+    height: auto;
+    overflow: visible;
   }
-  .sv-text,
-    .sv-scene,
-    .sv-frame {
-    width: min(100%, calc(36svh * 1.1538));
+  .sv-panel {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 52px 20px 52px;
+  }
+  .sv-pin > article:first-of-type {
+    padding-top: 92px;
+  }
+  .sv-scene {
+    order: -1;
+    width: 100%;
+    max-width: 460px;
+    margin: 0 0 26px;
+  }
+  .sv-frame {
+    width: 100%;
     border-radius: 26px;
+  }
+  .sv-text {
+    order: 0;
+    width: 100%;
+    max-width: 460px;
   }
   .sv-cap {
     font-size: 17px;
@@ -275,53 +283,32 @@
     margin-bottom: 2px;
   }
   .sv-text h3 {
-    font-size: clamp(32px, 9vw, 46px);
+    font-size: clamp(34px, 10vw, 48px);
   }
   .sv-line {
-    margin-top: 8px;
-    font-size: 23px;
+    margin-top: 10px;
+    font-size: 24px;
   }
   .sv-body {
-    margin-top: 10px;
-    font-size: 15px;
-    line-height: 1.5;
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.55;
   }
   .sv-tags {
-    margin-top: 12px;
+    margin-top: 14px;
     gap: 6px;
   }
   .sv-tags li {
-    padding: 3px 11px;
-    font-size: 12.5px;
+    padding: 4px 12px;
+    font-size: 13px;
   }
   .sv-link {
-    margin-top: 14px;
-    padding: 10px 18px;
-    font-size: 15px;
+    margin-top: 18px;
+    padding: 11px 20px;
+    font-size: 15.5px;
   }
+  .sv-dots,
   .sv-hint {
-    bottom: 34px;
-    font-size: 19px;
-  }
-  .sv-hint svg {
-    display: none;
-  }
-  .sv-dots {
-    top: auto;
-    right: auto;
-    left: 50%;
-    bottom: 16px;
-    flex-direction: row;
-    transform: translateX(-50%);
-  }
-  .sv-dots button.on {
-    height: 11px;
-    width: 30px;
-  }
-}
-
-@media (max-height: 640px) and (max-width: 900px) {
-  .sv-body {
     display: none;
   }
 }
@@ -333,10 +320,14 @@
   }
   .sv-panel {
     position: relative;
-    min-height: 100vh;
   }
   .sv-dots,
   .sv-hint {
     display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) and (min-width: 901px) and (hover: hover) {
+  .sv-panel {
+    min-height: 100vh;
   }
 }
