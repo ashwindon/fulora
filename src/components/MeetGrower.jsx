@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Draggable } from 'gsap/Draggable'
 import { GROWER } from './growerData.js'
-import { PhotoArt, Mascot } from './growerArt.jsx'
+import { PhotoArt, Mascot, FactIcon } from './growerArt.jsx'
 import './MeetGrower.css'
 
 gsap.registerPlugin(ScrollTrigger, Draggable)
@@ -168,7 +168,7 @@ export default function MeetGrower() {
           <ul className="gr-packets">
             {GROWER.facts.map((f, i) => (
               <li key={f.label}>
-                <button type="button" className={`gr-packet${open[i] ? ' open' : ''}`} style={{ '--c': f.color }} aria-pressed={!!open[i]} onClick={() => toggle(i)}>
+                <button type="button" className={`gr-packet${open[i] ? ' open' : ''}`} style={{ '--c': f.color, '--d': f.dark }} aria-pressed={!!open[i]} onClick={() => toggle(i)}>
                   <span className="gr-face gr-front">
                     <svg viewBox="-20 -20 40 40" width="46" height="46" aria-hidden="true">
                       <g fill="#fff">
@@ -183,7 +183,12 @@ export default function MeetGrower() {
                     <em>tap to open</em>
                   </span>
                   <span className="gr-face gr-back">
-                    <span>{f.answer}</span>
+                    <span className="gr-badge">
+                      <FactIcon name={f.icon} />
+                    </span>
+                    <small>{f.label}</small>
+                    <span className="gr-answer">{f.answer}</span>
+                    <span className="gr-no">No. {String(i + 1).padStart(2, '0')}</span>
                   </span>
                 </button>
               </li>

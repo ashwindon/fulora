@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { scroller } from '../scroller.js'
 import { SERVICES } from './serviceData.js'
 import { SCENES } from './sceneMap.js'
 import { BUILDERS } from './sceneBuilders.js'
@@ -10,18 +11,20 @@ gsap.registerPlugin(ScrollTrigger)
 
 const N = SERVICES.length
 const pad = (n) => String(n).padStart(2, '0')
-// Scrolling snaps to the middle of each service's stretch of the page.
-const CENTERS = SERVICES.map((_, i) => (i + 0.5) / N)
 // How long each scene plays once its service arrives, in seconds.
 const SECONDS = { design: 9, planting: 8, lawn: 8, seasonal: 9, water: 9, care: 8 }
 
+// Like scrolling reels: while this section is on screen, one scroll (or swipe, or arrow key)
+// slides to the next service and its animation plays by itself. Scroll again for the next one.
+// Past the first or last service the page scrolls on as normal.
 export default function Services() {
   const root = useRef(null)
-  const trigger = useRef(null)
+  const api = useRef(null)
   const [step, setStep] = useState(0)
 
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const cleanups = []
     const ctx = gsap.context(() => {
       const panels = gsap.utils.toArray('.sv-panel')
       const scenes = SERVICES.map((s, i) => {
@@ -36,6 +39,7 @@ export default function Services() {
         return
       }
 
+      const pinEl = root.current.querySelector('.sv-pin')
       const parts = panels.map((p) => ({
         panel: p,
         items: p.querySelectorAll('.sv-in'),
@@ -44,63 +48,173 @@ export default function Services() {
       gsap.set(panels, { autoAlpha: 0 })
 
       let current = -1
+      let busy = false
+      let quiet = true
+      let quietTimer = null
       const timers = []
 
-      // A service arrives: its panel fades in and its scene plays from the start to the end.
-      const show = (i) => {
+      // Trackpads keep sending wheel events for a second after you stop. Wait until they stop
+      // before accepting the next scroll, so one flick moves exactly one service.
+      const settleSoon = (ms = 90) => {
+        clearTimeout(quietTimer)
+        quietTimer = setTimeout(() => (quiet = false), ms)
+      }
+
+      const go = (i, dir) => {
         if (i === current) return
         const prev = current
         current = i
         setStep(i)
         timers.forEach((t) => t.kill())
         timers.length = 0
+        busy = true
+        quiet = true
+        settleSoon()
 
+        const incoming = parts[i]
+        gsap.set(incoming.panel, { zIndex: 2 })
         if (prev >= 0) {
-          const o = parts[prev]
-          gsap.to(o.items, { y: -20, opacity: 0, duration: 0.3, stagger: 0.02, overwrite: true })
-          gsap.to(o.frame, { y: -24, scale: 0.95, opacity: 0, duration: 0.35, overwrite: true })
-          gsap.to(o.panel, { autoAlpha: 0, duration: 0.4, overwrite: true })
-          scenes.forEach((tl, k) => {
-            if (k !== i) timers.push(gsap.delayedCall(0.45, () => tl.pause(0)))
-          })
+          const outgoing = parts[prev]
+          gsap.set(outgoing.panel, { zIndex: 1 })
+          gsap.to(outgoing.panel, { yPercent: -dir * 24, autoAlpha: 0, duration: 0.9, ease: 'power3.inOut', overwrite: true })
         }
+        gsap.fromTo(
+          incoming.panel,
+          { yPercent: prev >= 0 ? dir * 100 : 0, autoAlpha: prev >= 0 ? 1 : 0 },
+          { yPercent: 0, autoAlpha: 1, duration: prev >= 0 ? 0.9 : 0.6, ease: 'power3.inOut', overwrite: true },
+        )
+        gsap.fromTo(incoming.items, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.07, delay: prev >= 0 ? 0.5 : 0.15, overwrite: true })
+        gsap.fromTo(incoming.frame, { y: dir * 60, scale: 0.92, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.9, ease: 'power3.out', delay: prev >= 0 ? 0.35 : 0.1, overwrite: true })
 
-        const n = parts[i]
+        // The animation starts as the slide settles, then plays through on its own.
+        scenes.forEach((tl, k) => k !== i && tl.pause(0))
         scenes[i].pause(0)
-        gsap.to(n.panel, { autoAlpha: 1, duration: 0.5, overwrite: true })
-        gsap.fromTo(n.items, { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.07, delay: 0.15, overwrite: true })
-        gsap.fromTo(n.frame, { y: 40, scale: 0.92, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.1, overwrite: true })
-        timers.push(gsap.delayedCall(0.7, () => scenes[i].play()))
+        timers.push(gsap.delayedCall(prev >= 0 ? 0.9 : 0.7, () => scenes[i].play()))
+        timers.push(gsap.delayedCall(1, () => (busy = false)))
+        timers.push(
+          gsap.delayedCall(1.05, () => {
+            panels.forEach((p, k) => k !== current && gsap.set(p, { autoAlpha: 0, yPercent: 0 }))
+          }),
+        )
       }
 
-      trigger.current = ScrollTrigger.create({
-        trigger: '.sv-pin',
-        start: 'top top',
-        end: `+=${N * 100}%`,
-        pin: true,
-        anticipatePin: 1,
-        snap: { snapTo: [0, ...CENTERS, 1], duration: { min: 0.2, max: 0.6 }, delay: 0.08, ease: 'power1.inOut' },
-        onUpdate: (self) => show(Math.min(N - 1, Math.floor(self.progress * N))),
-      })
+      const step1 = (dir) => {
+        if (busy || quiet) return
+        const next = current + dir
+        if (next < 0 || next >= N) {
+          // Past either end the reel lets go and the page glides on, so the scroll is never wasted.
+          release()
+          scroller.lenis?.scrollTo(next < 0 ? 0 : document.querySelector('#builder'), { duration: 1.2 })
+          return
+        }
+        go(next, dir)
+      }
 
-      // Show the first service as soon as the section is coming into view.
-      ScrollTrigger.create({
-        trigger: '.sv-pin',
-        start: 'top 70%',
-        once: true,
-        onEnter: () => {
-          if (current < 0) show(Math.min(N - 1, Math.floor(trigger.current.progress * N)))
+      const onKey = (e) => {
+        if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return
+        if (e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+          e.preventDefault()
+          step1(1)
+        } else if (e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+          e.preventDefault()
+          step1(-1)
+        }
+      }
+
+      const obs = ScrollTrigger.observe({
+        type: 'wheel,touch',
+        wheelSpeed: -1,
+        tolerance: 14,
+        preventDefault: true,
+        onUp: () => step1(1),
+        onDown: () => step1(-1),
+        onWheel: () => {
+          if (quiet) settleSoon()
         },
       })
+      obs.disable()
+
+      const engage = () => {
+        if (obs.isEnabled) return
+        pinEl.setAttribute('data-lenis-prevent', '')
+        quiet = true
+        settleSoon(180)
+        obs.enable()
+        window.addEventListener('keydown', onKey)
+        if (current < 0) go(0, 0)
+      }
+      function release() {
+        if (!obs.isEnabled) return
+        obs.disable()
+        pinEl.removeAttribute('data-lenis-prevent')
+        window.removeEventListener('keydown', onKey)
+      }
+
+      const jump = (pos) => {
+        if (scroller.lenis) scroller.lenis.scrollTo(pos, { immediate: true, force: true })
+        else window.scrollTo(0, pos)
+      }
+
+      const st = ScrollTrigger.create({
+        trigger: pinEl,
+        pin: true,
+        start: 'top top',
+        end: '+=2',
+        anticipatePin: 1,
+        onEnter: (self) => {
+          if (obs.isEnabled || scroller.nav) return
+          jump(self.start + 1)
+          engage()
+        },
+        onEnterBack: (self) => {
+          if (obs.isEnabled || scroller.nav) return
+          jump(self.end - 1)
+          engage()
+        },
+      })
+
+      // If the page ends up somewhere else while the reel holds it (scrollbar drag, find-in-page),
+      // let go instead of fighting it.
+      const onScroll = () => {
+        if (obs.isEnabled && Math.abs(window.scrollY - st.start) > 12) release()
+      }
+      window.addEventListener('scroll', onScroll, { passive: true })
+
+      // Show the first service as the section approaches, so it is already there on arrival.
+      ScrollTrigger.create({
+        trigger: pinEl,
+        start: 'top 85%',
+        once: true,
+        onEnter: () => current < 0 && go(0, 0),
+      })
+
+      const onNavStart = () => release()
+      const onNavDone = () => {
+        const y = window.scrollY
+        if (y >= st.start - 3 && y <= st.end + 3) {
+          jump(st.start + 1)
+          engage()
+        }
+      }
+      window.addEventListener('fulora:navstart', onNavStart)
+      window.addEventListener('fulora:navdone', onNavDone)
+
+      api.current = { go: (i) => i !== current && go(i, i > current ? 1 : -1) }
+      cleanups.push(() => {
+        clearTimeout(quietTimer)
+        window.removeEventListener('keydown', onKey)
+        window.removeEventListener('scroll', onScroll)
+        window.removeEventListener('fulora:navstart', onNavStart)
+        window.removeEventListener('fulora:navdone', onNavDone)
+      })
     }, root)
-    return () => ctx.revert()
+    return () => {
+      cleanups.forEach((fn) => fn())
+      ctx.revert()
+    }
   }, [])
 
-  const goTo = (i) => {
-    const st = trigger.current
-    if (!st) return
-    window.scrollTo({ top: st.start + CENTERS[i] * (st.end - st.start), behavior: 'smooth' })
-  }
+  const dark = SERVICES[step].theme === 'dark'
 
   return (
     <section className="services" id="services" ref={root}>
@@ -150,18 +264,19 @@ export default function Services() {
           )
         })}
 
-        <div className={`sv-dots ${SERVICES[step].theme}`} role="group" aria-label="Services">
+        <div className={`sv-dots ${dark ? 'dark' : ''}`} role="group" aria-label="Services">
           {SERVICES.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              className={i === step ? 'on' : ''}
-              aria-label={`Show ${s.name}`}
-              aria-current={i === step}
-              onClick={() => goTo(i)}
-            />
+            <button key={s.id} type="button" className={i === step ? 'on' : ''} aria-label={`Show ${s.name}`} aria-current={i === step} onClick={() => api.current?.go(i)} />
           ))}
         </div>
+
+        <p className={`sv-hint${dark ? ' dark' : ''}`} aria-hidden="true">
+          <span className="sv-hint-desktop">{step === N - 1 ? 'keep scrolling' : 'scroll for the next one'}</span>
+          <span className="sv-hint-touch">{step === N - 1 ? 'keep swiping' : 'swipe up for the next one'}</span>
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </p>
       </div>
     </section>
   )

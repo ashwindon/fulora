@@ -1,9 +1,204 @@
-.cursor {
+/* The cursor is a small dot that follows the pointer closely and a ring that trails behind it.
+   The ring grows and fills with an icon that says what the thing under it will do. */
+
+.cu {
   position: fixed;
   left: 0;
   top: 0;
   z-index: 1000;
   pointer-events: none;
-  width: 60px;
-  height: 60px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  --cu-c: var(--accent);
+}
+.cu.on {
+  opacity: 1;
+}
+
+.cu-ring,
+.cu-dot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.cu-ring {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: transparent;
+  box-shadow: 0 0 0 1.5px rgba(31, 40, 31, 0.55), inset 0 0 0 1.5px rgba(31, 40, 31, 0.3);
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease, border-color 0.2s ease, border-radius 0.25s ease, box-shadow 0.2s ease;
+}
+.cu-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(31, 40, 31, 0.35);
+  transition: opacity 0.15s ease, background-color 0.3s ease;
+}
+
+.ico {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+  transform: scale(0.4) rotate(-20deg);
+  transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- shapes ---------- */
+
+.cu[data-state='link'] .cu-ring,
+.cu[data-state='external'] .cu-ring,
+.cu[data-state='mail'] .cu-ring,
+.cu[data-state='tel'] .cu-ring,
+.cu[data-state='press'] .cu-ring,
+.cu[data-state='plant'] .cu-ring {
+  width: 48px;
+  height: 48px;
+  border-color: transparent;
+  background: var(--accent);
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.4);
+}
+.cu[data-state='grab'] .cu-ring,
+.cu[data-state='move'] .cu-ring {
+  width: 56px;
+  height: 56px;
+  border-color: transparent;
+  background: #1f5a2b;
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.4);
+}
+.cu[data-state='flip'] .cu-ring {
+  width: 56px;
+  height: 56px;
+  border-color: transparent;
+  background: #7048c6;
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.4);
+}
+.cu[data-state='talk'] .cu-ring {
+  width: 56px;
+  height: 56px;
+  border-color: transparent;
+  background: #1f9d77;
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.4);
+}
+/* Over text you can type in, the ring becomes a text bar. */
+.cu[data-state='text'] .cu-ring {
+  width: 5px;
+  height: 32px;
+  border: 0;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px rgba(31, 40, 31, 0.7);
+}
+.cu:not([data-state='default']) .cu-dot {
+  opacity: 0;
+}
+
+/* ---------- icons ---------- */
+
+.cu[data-state='link'] .ico-arrow,
+.cu[data-state='external'] .ico-external,
+.cu[data-state='mail'] .ico-mail,
+.cu[data-state='tel'] .ico-tel,
+.cu[data-state='press'] .ico-press,
+.cu[data-state='grab'] .ico-grab,
+.cu[data-state='move'] .ico-move,
+.cu[data-state='flip'] .ico-flip,
+.cu[data-state='talk'] .ico-talk,
+.cu[data-state='plant'] .ico-plant {
+  opacity: 1;
+  transform: none;
+}
+/* While you hold something, the open hand closes into a fist. */
+.cu[data-state='grab'][data-down] .ico-grab {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.cu[data-state='grab'][data-down] .ico-fist {
+  opacity: 1;
+  transform: none;
+}
+
+.cu[data-down] .cu-ring {
+  transform-origin: center;
+}
+.cu[data-down]:not([data-state='text']) .cu-ring {
+  width: 28px;
+  height: 28px;
+}
+.cu[data-down][data-state='link'] .cu-ring,
+.cu[data-down][data-state='external'] .cu-ring,
+.cu[data-down][data-state='mail'] .cu-ring,
+.cu[data-down][data-state='tel'] .cu-ring,
+.cu[data-down][data-state='press'] .cu-ring,
+.cu[data-down][data-state='plant'] .cu-ring,
+.cu[data-down][data-state='flip'] .cu-ring,
+.cu[data-down][data-state='talk'] .cu-ring {
+  width: 40px;
+  height: 40px;
+}
+.cu[data-down][data-state='grab'] .cu-ring,
+.cu[data-down][data-state='move'] .cu-ring {
+  width: 46px;
+  height: 46px;
+}
+
+/* ---------- the little word under the ring ---------- */
+
+.cu-label {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  padding: 1px 12px 3px;
+  border-radius: 999px;
+  background: #fff;
+  color: #2b2118;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transform: translate(-50%, -4px) scale(0.8);
+  transition: opacity 0.18s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cu.has-label .cu-label {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+/* ---------- click petals ---------- */
+
+.cu-burst {
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+.cu-p {
+  position: absolute;
+  left: -5px;
+  top: -8px;
+  width: 10px;
+  height: 16px;
+  border-radius: 60% 40% 60% 40% / 70% 70% 30% 30%;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-ring,
+  .ico {
+    transition: none;
+  }
+  .cu-burst {
+    display: none;
+  }
 }

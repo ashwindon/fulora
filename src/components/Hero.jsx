@@ -41,7 +41,7 @@ export default function Hero() {
   const headRef = useRef(null)
   const [bloomed, setBloomed] = useState(false)
   const [season, setSeason] = useState('summer')
-  const firstSeason = useRef(true)
+  const shownSeason = useRef('summer')
   const seasonTl = useRef(null)
 
   useLayoutEffect(() => {
@@ -79,7 +79,9 @@ export default function Hero() {
         return
       }
 
+      const bud = q('.bud')[0]
       gsap.set(stem, { strokeDasharray: stemLen, strokeDashoffset: stemLen })
+      gsap.set(bud, { attr: { r: 0, cx: BASE.x, cy: BASE.y - 10 } })
       gsap.set(leaves, { scale: 0 })
       gsap.set('.petal', { scale: 0, rotation: -40, svgOrigin: center })
       gsap.set('.disc, .seeds', { scale: 0, svgOrigin: center })
@@ -92,6 +94,25 @@ export default function Hero() {
       gsap.set('.hero-sun, .cloud', { opacity: 0 })
       gsap.set('.scroll-cue', { opacity: 0 })
 
+      // The order matters: the stem grows from the soil first (a green bud rides its tip),
+      // the leaves unfurl as the stem passes them, and only once the stem has arrived
+      // does the flower open at the top.
+      const STEM_AT = 0.8
+      const STEM_DUR = 2.4
+      const stemEase = gsap.parseEase('power2.inOut')
+      const timeAt = (t) => {
+        let lo = 0
+        let hi = 1
+        for (let i = 0; i < 24; i++) {
+          const mid = (lo + hi) / 2
+          if (stemEase(mid) < t) lo = mid
+          else hi = mid
+        }
+        return STEM_AT + STEM_DUR * ((lo + hi) / 2)
+      }
+      const tip = { p: 0 }
+      const FLOWER_AT = STEM_AT + STEM_DUR + 0.15
+
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
       tl.to('.hero-sun', { opacity: 1, duration: 1.4 }, 0)
         .to('.cloud', { opacity: 0.95, duration: 1.6, stagger: 0.25 }, 0.2)
@@ -99,16 +120,36 @@ export default function Hero() {
         .to('.grass-in', { scaleY: 1, duration: 1.1, ease: 'back.out(1.5)' }, 0.5)
         .to('.hello', { opacity: 1, y: 0, duration: 0.7 }, 0.2)
         .to('.word-in', { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.09 }, 0.3)
-        .to(stem, { strokeDashoffset: 0, duration: 2, ease: 'power2.inOut' }, 0.6)
-        .to(leaves, { scale: 1, duration: 1, ease: 'elastic.out(1, 0.5)', stagger: 0.32 }, 1.0)
-        .to('.lede, .cta > *', { opacity: 1, y: 0, duration: 0.8, stagger: 0.12 }, 1.4)
-        .to(underline, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut' }, 1.7)
-        .to('.petal-back', { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.8)', stagger: 0.045 }, 2.3)
-        .to('.petal-front', { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.8)', stagger: 0.045 }, 2.6)
-        .to('.disc', { scale: 1, duration: 0.8, ease: 'back.out(2)' }, 2.9)
-        .to('.seeds', { scale: 1, duration: 0.9, ease: 'back.out(2)' }, 3.05)
-        .to('.scroll-cue', { opacity: 1, duration: 0.8 }, 3.4)
-        .add(() => setBloomed(true), 3.2)
+        .to(stem, { strokeDashoffset: 0, duration: STEM_DUR, ease: 'power2.inOut' }, STEM_AT)
+        .to(bud, { attr: { r: 8 }, duration: 0.5, ease: 'back.out(2)' }, STEM_AT)
+        .to(
+          tip,
+          {
+            p: 1,
+            duration: STEM_DUR,
+            ease: 'power2.inOut',
+            onUpdate: () => {
+              const pt = stem.getPointAtLength(stemLen * tip.p)
+              bud.setAttribute('cx', pt.x)
+              bud.setAttribute('cy', pt.y)
+            },
+          },
+          STEM_AT,
+        )
+        .to('.lede, .cta > *', { opacity: 1, y: 0, duration: 0.8, stagger: 0.12 }, 1.6)
+        .to(underline, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut' }, 2)
+        .to(bud, { attr: { r: 13 }, duration: 0.35, ease: 'power2.out' }, FLOWER_AT - 0.15)
+        .to(bud, { attr: { r: 0 }, duration: 0.4, ease: 'power2.in' }, FLOWER_AT + 0.25)
+        .to('.petal-back', { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.8)', stagger: 0.045 }, FLOWER_AT)
+        .to('.petal-front', { scale: 1, rotation: 0, duration: 1, ease: 'back.out(1.8)', stagger: 0.045 }, FLOWER_AT + 0.3)
+        .to('.disc', { scale: 1, duration: 0.8, ease: 'back.out(2)' }, FLOWER_AT + 0.6)
+        .to('.seeds', { scale: 1, duration: 0.9, ease: 'back.out(2)' }, FLOWER_AT + 0.75)
+        .to('.scroll-cue', { opacity: 1, duration: 0.8 }, FLOWER_AT + 1.1)
+        .add(() => setBloomed(true), FLOWER_AT + 0.9)
+
+      leaves.forEach((g, i) => {
+        tl.to(g, { scale: 1, duration: 1, ease: 'elastic.out(1, 0.5)' }, timeAt(LEAVES[i].t))
+      })
 
       const sway = leaves.map((g) => (v) => gsap.set(g, { rotation: v }))
       tick = (time) => {
@@ -137,62 +178,55 @@ export default function Hero() {
     }
   }, [])
 
-  // Switching season: the flower closes, changes colour and blooms again while
-  // the sky, hills, grass and particles all glide to the new palette.
+  // Switching season: the flower ripples into its new colours while the sky, hills,
+  // grass and falling bits all glide to the new palette on one shared clock.
   useLayoutEffect(() => {
-    if (firstSeason.current) {
-      firstSeason.current = false
-      return
-    }
+    // Only react to a real change (React's dev double-run must not replay the transition on load).
+    if (shownSeason.current === season) return
+    shownSeason.current = season
     const cfg = SEASONS[season]
     const el = root.current
     const q = (s) => gsap.utils.toArray(s, el)
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const dur = reduce ? 0.01 : 1.8
+    const dur = reduce ? 0.01 : 1.7
     const f = cfg.flower
-    const petals = q('.petal')
-    const core = q('.disc, .seeds')
-
-    gsap.to(el, { ...cfg.vars, duration: dur, ease: 'power2.inOut', overwrite: 'auto' })
-    gsap.to(document.documentElement, {
-      '--accent': cfg.accent,
-      '--accent-dark': cfg.accentDark,
-      '--soil': cfg.vars['--soil'],
-      '--soil-dark': cfg.vars['--soil-dark'],
-      duration: dur,
-      ease: 'power2.inOut',
-      overwrite: 'auto',
-    })
-    gsap.to(q('.stem'), { stroke: f.stem, duration: dur, overwrite: 'auto' })
-    q('.leaf-body').forEach((p, i) => {
-      gsap.to(p, { fill: f.leaves[[0, 1, 1, 0][i]], duration: dur, overwrite: 'auto' })
-    })
-    gsap.to(q('.gflower'), { opacity: cfg.grassFlowers, duration: 1, overwrite: 'auto' })
-
-    const recolour = () => {
-      q('.petal-back').forEach((p, i) => gsap.set(p, { fill: f.back[i % 2] }))
-      q('.petal-front').forEach((p, i) => gsap.set(p, { fill: f.front[i % 2] }))
-      gsap.set(q('.disc'), { fill: f.disc })
-      gsap.set(q('.seeds'), { fill: f.seeds })
-    }
-
-    if (reduce) {
-      recolour()
-      return
-    }
 
     seasonTl.current?.kill()
-    const tl = gsap.timeline()
+    const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } })
     seasonTl.current = tl
-    tl.to(petals, { scale: 0.15, rotation: -30, duration: 0.5, ease: 'power2.in', stagger: { each: 0.012, from: 'edges' } }, 0)
-      .to(core, { scale: 0.55, duration: 0.4, ease: 'power2.in' }, 0.1)
-      .add(recolour, 0.55)
-      .to(petals, { scale: 1, rotation: 0, duration: 0.9, ease: 'back.out(1.8)', stagger: { each: 0.02, from: 'center' } }, 0.6)
-      .to(core, { scale: 1, duration: 0.7, ease: 'back.out(2)' }, 0.85)
 
-    gsap.to(q('.grass-in'), { scaleY: 0.5, duration: 0.45, ease: 'power2.in', yoyo: true, repeat: 1 })
-    gsap.fromTo(q('.layer'), { y: 18 }, { y: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', stagger: 0.08 })
-    gsap.fromTo(q('.hello'), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(2)', delay: 0.3 })
+    // Everything that changes colour shares one tween clock, so nothing lags behind.
+    tl.to(el, { ...cfg.vars, duration: dur }, 0)
+      .to(
+        document.documentElement,
+        {
+          '--accent': cfg.accent,
+          '--accent-dark': cfg.accentDark,
+          '--soil': cfg.vars['--soil'],
+          '--soil-dark': cfg.vars['--soil-dark'],
+          duration: dur,
+        },
+        0,
+      )
+      .to(q('.stem'), { stroke: f.stem, duration: dur }, 0)
+      .to(q('.gflower'), { opacity: cfg.grassFlowers, duration: dur }, 0)
+    q('.leaf-body').forEach((p, i) => tl.to(p, { fill: f.leaves[[0, 1, 1, 0][i]], duration: dur }, 0))
+
+    // The flower: colour spreads out from the centre while a soft pulse ripples through the petals.
+    const wave = { each: 0.022, from: 'center' }
+    tl.to(q('.petal-back'), { fill: (i) => f.back[i % 2], duration: 1.1, stagger: wave }, 0.1)
+      .to(q('.petal-front'), { fill: (i) => f.front[i % 2], duration: 1.1, stagger: wave }, 0.18)
+      .to(q('.disc'), { fill: f.disc, duration: 0.9 }, 0.2)
+      .to(q('.seeds'), { fill: f.seeds, duration: 0.9 }, 0.3)
+    if (!reduce) {
+      tl.to(
+        q('.petal'),
+        { keyframes: [{ scale: 1.1, duration: 0.3, ease: 'power2.out' }, { scale: 1, duration: 0.6, ease: 'power2.inOut' }], stagger: { each: 0.014, from: 'center' } },
+        0.1,
+      )
+        .fromTo(q('.layer'), { y: 8 }, { y: 0, duration: 1.2, ease: 'power2.out', stagger: 0.06 }, 0)
+        .fromTo(q('.hello'), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 0.25)
+    }
   }, [season])
 
   return (
@@ -238,6 +272,7 @@ export default function Hero() {
         <svg viewBox="0 0 600 760">
           <g className="plant">
             <path className="stem" d={STEM} fill="none" stroke="#2f7d3e" strokeWidth="10" strokeLinecap="round" />
+            <circle className="bud" cx="300" cy="735" r="0" fill="#4aa35c" />
             {LEAVES.map((l, i) => (
               <g className="leaf" key={i}>
                 <path className="leaf-body" fill={l.fill} />
@@ -280,13 +315,12 @@ export default function Hero() {
               </g>
             </g>
           ))}
-          {BLADES.map((b, i) => (
-            <path
-              className="blade"
-              key={i}
-              d={b.d}
-              style={{ fill: `var(--g${b.tier})`, '--delay': `${b.delay}s`, '--dur': `${b.dur}s` }}
-            />
+          {[0, 1, 2, 3].map((t) => (
+            <g key={t} style={{ fill: `var(--g${t})` }}>
+              {BLADES.filter((b) => b.tier === t).map((b, i) => (
+                <path className="blade" key={i} d={b.d} style={{ '--delay': `${b.delay}s`, '--dur': `${b.dur}s` }} />
+              ))}
+            </g>
           ))}
         </g>
       </svg>

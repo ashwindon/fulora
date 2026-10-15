@@ -13,6 +13,7 @@
   width: 155.52vh;
   left: calc(50% - 77.76vh);
   overflow: visible;
+  will-change: transform;
 }
 .far {
   fill: var(--far);

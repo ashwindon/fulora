@@ -23,12 +23,12 @@ export const GROWER = {
   sign: 'your grower',
 
   facts: [
-    { label: 'Favourite flower', answer: 'Peony. Fluffy, dramatic, and it smells like a good day.', color: '#f58cbc' },
-    { label: 'Plant I can’t kill', answer: 'A pothos. It has survived three house moves and my first year of enthusiasm.', color: '#5db35a' },
-    { label: 'Nemesis', answer: 'Hydrangeas. They sulk the moment I look at them.', color: '#8e6bd1' },
-    { label: 'Garden soundtrack', answer: 'Birds, bees and a neighbour’s very questionable radio.', color: '#ffb627' },
-    { label: 'Secret talent', answer: 'I can tell a plant’s mood from across the street.', color: '#ff7a59' },
-    { label: 'Dream project', answer: 'A garden with a hidden bench you only find if you get a little lost.', color: '#1f9d77' },
+    { label: 'Favourite flower', answer: 'Peony. Fluffy, dramatic, and it smells like a good day.', color: '#f06aa5', dark: '#9c1d5e', icon: 'peony' },
+    { label: 'Plant I can’t kill', answer: 'A pothos. It has survived three house moves and my first year of enthusiasm.', color: '#4fb35a', dark: '#1b6232', icon: 'pothos' },
+    { label: 'Nemesis', answer: 'Hydrangeas. They sulk the moment I look at them.', color: '#8e6bd1', dark: '#43298f', icon: 'hydrangea' },
+    { label: 'Garden soundtrack', answer: 'Birds, bees and a neighbour’s very questionable radio.', color: '#f0a30a', dark: '#8f4f00', icon: 'music' },
+    { label: 'Secret talent', answer: 'I can tell a plant’s mood from across the street.', color: '#ff7a59', dark: '#a82f16', icon: 'eye' },
+    { label: 'Dream project', answer: 'A garden with a hidden bench you only find if you get a little lost.', color: '#1fb58a', dark: '#09614a', icon: 'bench' },
   ],
 
   stats: [

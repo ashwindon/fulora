@@ -128,3 +128,65 @@ export function Mascot() {
     </svg>
   )
 }
+
+// Little white line drawings that sit on the back of each seed packet.
+export function FactIcon({ name }) {
+  const line = { fill: 'none', stroke: '#fff', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      {name === 'peony' && (
+        <g>
+          {Array.from({ length: 8 }, (_, i) => (
+            <path key={i} d={petalPath(32, 32, i * 45, 24, 10)} fill="rgba(255,255,255,0.28)" stroke="#fff" strokeWidth="2.4" strokeLinejoin="round" />
+          ))}
+          {Array.from({ length: 6 }, (_, i) => (
+            <path key={i} d={petalPath(32, 32, i * 60 + 20, 15, 7)} fill="rgba(255,255,255,0.4)" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round" />
+          ))}
+          <circle cx="32" cy="32" r="4.5" fill="#fff" />
+        </g>
+      )}
+      {name === 'pothos' && (
+        <g {...line}>
+          <path d="M32 54 C14 42 10 26 22 17 C28 13 32 17 32 22 C32 17 36 13 42 17 C54 26 50 42 32 54Z" fill="rgba(255,255,255,0.22)" />
+          <path d="M32 54 V24 M32 40 L22 32 M32 34 L42 27 M32 46 L24 42 M32 44 L40 40" strokeWidth="2.4" />
+        </g>
+      )}
+      {name === 'hydrangea' && (
+        <g>
+          {[
+            [32, 14], [22, 20], [42, 20], [14, 28], [32, 26], [50, 28], [22, 34], [42, 34], [32, 40], [14, 40], [50, 40], [24, 47], [40, 47],
+          ].map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r="6.4" fill="rgba(255,255,255,0.3)" stroke="#fff" strokeWidth="2.2" />
+          ))}
+          <path d="M32 54 q-3 5 0 8" {...line} strokeWidth="2.6" />
+        </g>
+      )}
+      {name === 'music' && (
+        <g {...line}>
+          <path d="M24 46 V16 L46 11 V41" />
+          <ellipse cx="19" cy="47" rx="6.5" ry="5" fill="#fff" />
+          <ellipse cx="41" cy="42" rx="6.5" ry="5" fill="#fff" />
+          <path d="M52 22 q4 3 0 7 M56 19 q7 7 0 14" strokeWidth="2.4" />
+        </g>
+      )}
+      {name === 'eye' && (
+        <g {...line}>
+          <path d="M5 32 C16 14 48 14 59 32 C48 50 16 50 5 32Z" fill="rgba(255,255,255,0.22)" />
+          <circle cx="32" cy="32" r="9" fill="#fff" />
+          <circle cx="32" cy="32" r="3.6" fill="rgba(0,0,0,0.55)" stroke="none" />
+          <path d="M50 10 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2Z" fill="#fff" strokeWidth="1.5" />
+        </g>
+      )}
+      {name === 'bench' && (
+        <g {...line}>
+          <path d="M8 56 V30 C8 14 56 14 56 30 V56" strokeWidth="2.6" />
+          <rect x="18" y="38" width="28" height="7" rx="2" fill="rgba(255,255,255,0.3)" />
+          <path d="M20 45 V54 M44 45 V54 M18 32 H46" />
+          <circle cx="14" cy="24" r="2.4" fill="#fff" stroke="none" />
+          <circle cx="50" cy="22" r="2.4" fill="#fff" stroke="none" />
+          <circle cx="32" cy="17" r="2.4" fill="#fff" stroke="none" />
+        </g>
+      )}
+    </svg>
+  )
+}
