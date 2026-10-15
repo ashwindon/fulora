@@ -18,24 +18,34 @@ function drawSetup(els) {
   })
 }
 
-/* 1. Garden design: draw the plan, wash it with colour, pop the plants */
+/* 1. Garden design: draw the plan, wash it into a garden, bring it to life */
 function design(root) {
   const q = Q(root)
   const tl = gsap.timeline({ defaults: { ease: 'none' } })
   const lines = q('.dz-line')
   drawSetup(lines)
   gsap.set(q('.dz-clip'), { attr: { r: 0 } })
-  gsap.set(q('.dz-flower'), { scale: 0 })
-  gsap.set(q('.dz-canopy'), { scale: 0.7 })
+  gsap.set(q('.dz-furn, .dz-lav, .dz-veg, .dz-hedge, .dz-flower, .dz-tree, .dz-lily, .dz-koi, .dz-label'), { scale: 0 })
+  gsap.set(q('.dz-label'), { y: 10 })
   gsap.set(q('.dz-dim, .dz-ripple'), { opacity: 0 })
+  const koi = q('.dz-koi')
 
-  tl.to(lines, { strokeDashoffset: 0, duration: 0.12, ease: 'power1.inOut', stagger: 0.3 / Math.max(1, lines.length - 1) }, 0)
-    .to(q('.dz-dim'), { opacity: 1, duration: 0.05 }, 0.38)
-    .to(q('.dz-clip'), { attr: { r: 430 }, duration: 0.36, ease: 'power2.inOut' }, 0.46)
-    .to(q('.dz-flower'), { scale: 1, duration: 0.1, ease: 'back.out(2.5)', stagger: 0.004 }, 0.8)
-    .to(q('.dz-canopy'), { scale: 1, duration: 0.14, ease: 'back.out(2)' }, 0.8)
+  tl.to(lines, { strokeDashoffset: 0, duration: 0.1, ease: 'power1.inOut', stagger: 0.22 / Math.max(1, lines.length - 1) }, 0)
+    .to(q('.dz-dim'), { opacity: 1, duration: 0.04 }, 0.28)
+    .to(q('.dz-clip'), { attr: { r: 430 }, duration: 0.3, ease: 'power2.inOut' }, 0.36)
+    .to(q('.dz-furn'), { scale: 1, duration: 0.07, ease: 'back.out(2)', stagger: 0.012 }, 0.62)
+    .to(q('.dz-hedge'), { scale: 1, duration: 0.06, ease: 'back.out(2)', stagger: 0.006 }, 0.64)
+    .to(q('.dz-lav'), { scale: 1, duration: 0.05, ease: 'back.out(2)', stagger: 0.004 }, 0.66)
+    .to(q('.dz-veg'), { scale: 1, duration: 0.05, ease: 'back.out(2)', stagger: 0.008 }, 0.68)
+    .to(q('.dz-flower'), { scale: 1, duration: 0.06, ease: 'back.out(2.5)', stagger: 0.004 }, 0.68)
+    .to(q('.dz-tree'), { scale: 1, duration: 0.1, ease: 'back.out(1.8)', stagger: 0.05 }, 0.72)
+    .to(q('.dz-lily'), { scale: 1, duration: 0.07, ease: 'back.out(2)' }, 0.8)
+    .to(koi, { scale: 1, duration: 0.05, ease: 'back.out(2)', stagger: 0.03 }, 0.82)
+    .to(koi[0], { x: 16, y: -8, duration: 0.14, ease: 'sine.inOut' }, 0.84)
+    .to(koi[1], { x: -14, y: 10, duration: 0.14, ease: 'sine.inOut' }, 0.84)
     .set(q('.dz-ripple'), { opacity: 0.9 }, 0.82)
-    .to(q('.dz-ripple'), { attr: { rx: 56, ry: 34 }, opacity: 0, duration: 0.18 }, 0.82)
+    .to(q('.dz-ripple'), { attr: { rx: 56, ry: 34 }, opacity: 0, duration: 0.16 }, 0.82)
+    .to(q('.dz-label'), { scale: 1, y: 0, duration: 0.06, ease: 'back.out(2)', stagger: 0.03 }, 0.88)
   return tl
 }
 

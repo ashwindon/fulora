@@ -10,8 +10,10 @@ gsap.registerPlugin(ScrollTrigger)
 
 const N = SERVICES.length
 const pad = (n) => String(n).padStart(2, '0')
-// Where each service "rests" on the scroll track: scene finished, text fully visible.
-const REST = SERVICES.map((_, i) => (i + 0.84) / N)
+// Scrolling snaps to the middle of each service's stretch of the page.
+const CENTERS = SERVICES.map((_, i) => (i + 0.5) / N)
+// How long each scene plays once its service arrives, in seconds.
+const SECONDS = { design: 9, planting: 8, lawn: 8, seasonal: 9, water: 9, care: 8 }
 
 export default function Services() {
   const root = useRef(null)
@@ -22,65 +24,74 @@ export default function Services() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const ctx = gsap.context(() => {
       const panels = gsap.utils.toArray('.sv-panel')
-      const scenes = SERVICES.map((s, i) => BUILDERS[s.id](panels[i].querySelector('.sv-frame')))
+      const scenes = SERVICES.map((s, i) => {
+        const tl = BUILDERS[s.id](panels[i].querySelector('.sv-frame'))
+        tl.timeScale(tl.duration() / SECONDS[s.id])
+        tl.pause(0)
+        return tl
+      })
 
       if (reduce) {
         scenes.forEach((tl) => tl.progress(1))
         return
       }
 
-      // Panel 0 greets the visitor as the section arrives; the rest wait their turn.
-      const first = panels[0].querySelectorAll('.sv-text, .sv-scene')
-      gsap.from(first, {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out',
-        stagger: 0.15,
-        scrollTrigger: { trigger: '.sv-pin', start: 'top 75%', once: true },
-      })
-      panels.slice(1).forEach((p) => {
-        gsap.set(p, { autoAlpha: 0 })
-        gsap.set(p.querySelectorAll('.sv-in'), { y: 34, opacity: 0 })
-        gsap.set(p.querySelector('.sv-frame'), { y: 40, scale: 0.9, opacity: 0 })
+      const parts = panels.map((p) => ({
+        panel: p,
+        items: p.querySelectorAll('.sv-in'),
+        frame: p.querySelector('.sv-frame'),
+      }))
+      gsap.set(panels, { autoAlpha: 0 })
+
+      let current = -1
+      const timers = []
+
+      // A service arrives: its panel fades in and its scene plays from the start to the end.
+      const show = (i) => {
+        if (i === current) return
+        const prev = current
+        current = i
+        setStep(i)
+        timers.forEach((t) => t.kill())
+        timers.length = 0
+
+        if (prev >= 0) {
+          const o = parts[prev]
+          gsap.to(o.items, { y: -20, opacity: 0, duration: 0.3, stagger: 0.02, overwrite: true })
+          gsap.to(o.frame, { y: -24, scale: 0.95, opacity: 0, duration: 0.35, overwrite: true })
+          gsap.to(o.panel, { autoAlpha: 0, duration: 0.4, overwrite: true })
+          scenes.forEach((tl, k) => {
+            if (k !== i) timers.push(gsap.delayedCall(0.45, () => tl.pause(0)))
+          })
+        }
+
+        const n = parts[i]
+        scenes[i].pause(0)
+        gsap.to(n.panel, { autoAlpha: 1, duration: 0.5, overwrite: true })
+        gsap.fromTo(n.items, { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.07, delay: 0.15, overwrite: true })
+        gsap.fromTo(n.frame, { y: 40, scale: 0.92, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.1, overwrite: true })
+        timers.push(gsap.delayedCall(0.7, () => scenes[i].play()))
+      }
+
+      trigger.current = ScrollTrigger.create({
+        trigger: '.sv-pin',
+        start: 'top top',
+        end: `+=${N * 100}%`,
+        pin: true,
+        anticipatePin: 1,
+        snap: { snapTo: [0, ...CENTERS, 1], duration: { min: 0.2, max: 0.6 }, delay: 0.08, ease: 'power1.inOut' },
+        onUpdate: (self) => show(Math.min(N - 1, Math.floor(self.progress * N))),
       })
 
-      const master = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: '.sv-pin',
-          start: 'top top',
-          end: `+=${N * 100}%`,
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          snap: { snapTo: [0, ...REST, 1], duration: { min: 0.25, max: 0.7 }, delay: 0.12, ease: 'power1.inOut' },
-          onUpdate: (self) => setStep(Math.min(N - 1, Math.floor(self.progress * N))),
+      // Show the first service as soon as the section is coming into view.
+      ScrollTrigger.create({
+        trigger: '.sv-pin',
+        start: 'top 70%',
+        once: true,
+        onEnter: () => {
+          if (current < 0) show(Math.min(N - 1, Math.floor(trigger.current.progress * N)))
         },
       })
-      trigger.current = master.scrollTrigger
-
-      panels.forEach((p, i) => {
-        const items = p.querySelectorAll('.sv-in')
-        const frame = p.querySelector('.sv-frame')
-        if (i > 0) {
-          master
-            .to(p, { autoAlpha: 1, duration: 0.12 }, i - 0.12)
-            .to(items, { y: 0, opacity: 1, duration: 0.16, ease: 'power2.out', stagger: 0.025 }, i - 0.1)
-            .to(frame, { y: 0, scale: 1, opacity: 1, duration: 0.18, ease: 'power2.out' }, i - 0.1)
-        }
-        if (i < N - 1) {
-          master
-            .to(items, { y: -26, opacity: 0, duration: 0.1, stagger: 0.01 }, i + 0.86)
-            .to(frame, { y: -30, scale: 0.94, opacity: 0, duration: 0.12 }, i + 0.86)
-            .to(p, { autoAlpha: 0, duration: 0.12 }, i + 0.88)
-        }
-        const tl = scenes[i]
-        tl.timeScale(tl.duration() / 0.7)
-        master.add(tl, i + 0.05)
-      })
-      // Make the track exactly N long so REST positions line up with each service.
-      master.to({}, { duration: 0.0001 }, N - 0.0001)
     }, root)
     return () => ctx.revert()
   }, [])
@@ -88,7 +99,7 @@ export default function Services() {
   const goTo = (i) => {
     const st = trigger.current
     if (!st) return
-    window.scrollTo({ top: st.start + REST[i] * (st.end - st.start), behavior: 'smooth' })
+    window.scrollTo({ top: st.start + CENTERS[i] * (st.end - st.start), behavior: 'smooth' })
   }
 
   return (
@@ -106,7 +117,7 @@ export default function Services() {
         {SERVICES.map((s, i) => {
           const Scene = SCENES[s.id]
           return (
-            <article className={`sv-panel ${s.theme}${i % 2 ? ' flip' : ''}`} key={s.id} aria-label={s.name}>
+            <article className={`sv-panel ${s.theme}`} key={s.id} aria-label={s.name}>
               <div className="sv-bg" style={{ background: s.bg }} />
 
               <div className="sv-text">

@@ -51,14 +51,6 @@
   justify-self: start;
   width: 100%;
 }
-.sv-panel.flip .sv-text {
-  grid-column: 2;
-  justify-self: start;
-}
-.sv-panel.flip .sv-scene {
-  grid-column: 1;
-  justify-self: end;
-}
 
 .sv-count {
   margin: 0 0 6px;
@@ -325,19 +317,8 @@
     padding: 74px 20px 58px;
   }
   .sv-text,
-  .sv-panel.flip .sv-text {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: center;
-    width: 100%;
-  }
-  .sv-scene,
-  .sv-panel.flip .sv-scene {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: center;
-  }
-  .sv-frame {
+    .sv-scene,
+    .sv-frame {
     width: min(100%, calc(36svh * 1.1538));
     border-radius: 26px;
   }

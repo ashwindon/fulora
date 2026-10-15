@@ -3,36 +3,39 @@ import { petalPath, leafPath, seeded } from './botany.js'
 const hand = { fontFamily: "'Caveat','Segoe Print',cursive", fontWeight: 700 }
 
 /* ------------------------------------------------------------------ */
-/* 1. Design: a blueprint that colours itself in                       */
+/* 1. Design: a blueprint that turns into a real, lived-in garden      */
 /* ------------------------------------------------------------------ */
 
-const DZ_LAWN =
-  'M110 120 C200 100 330 130 420 110 C480 105 505 150 500 210 C495 300 505 380 440 410 C350 430 220 415 140 405 C95 395 90 300 100 230 C105 180 85 140 110 120Z'
-const DZ_STONES = [
-  [140, 385],
-  [190, 362],
-  [238, 344],
-  [282, 316],
-  [318, 284],
-  [342, 252],
-  [355, 222],
-]
-const DZ_BEDS = [
-  { x: 170, y: 185, rx: 54, ry: 40, cols: ['#ff6f9c', '#ffd23f', '#ffffff'] },
-  { x: 440, y: 345, rx: 52, ry: 34, cols: ['#8e6bd1', '#ff8f3d', '#ffffff'] },
-  { x: 285, y: 135, rx: 50, ry: 24, cols: ['#ec3f86', '#ffe170', '#c9a8ff'] },
+const DZ_MAIN = 'M150 440 C160 395 215 372 262 340 C312 306 332 280 360 245'
+const DZ_BRANCH = 'M200 372 C180 320 172 270 168 212'
+const DZ_POND = 'M336 190 C330 150 380 126 424 134 C476 142 490 190 464 220 C436 252 352 244 336 190Z'
+const DZ_BEDA = 'M360 380 C350 330 400 306 460 314 C510 322 522 362 500 400 C470 430 380 428 360 380Z'
+const DZ_POSTS = (() => {
+  const p = []
+  for (let x = 70; x <= 530; x += 46) p.push([x, 80], [x, 440])
+  for (let y = 126; y < 440; y += 46) p.push([70, y], [530, y])
+  return p
+})()
+const DZ_COLORS = ['#ff6f9c', '#ffd23f', '#ffffff', '#ff8f3d', '#ec3f86', '#c9a8ff']
+const DZ_LABELS = [
+  { t: 'Seating nook', x: 92, y: 228, w: 112 },
+  { t: 'Pond and lotus', x: 372, y: 264, w: 128 },
+  { t: 'Cutting flowers', x: 384, y: 450, w: 138 },
+  { t: 'Veg patch', x: 244, y: 450, w: 96 },
 ]
 
 export function DesignScene() {
   const rnd = seeded(3)
-  const flowers = DZ_BEDS.flatMap((b) =>
-    Array.from({ length: 10 }, (_, i) => {
-      const a = rnd() * Math.PI * 2
-      const r = Math.sqrt(rnd())
-      return { x: b.x + Math.cos(a) * b.rx * 0.78 * r, y: b.y + Math.sin(a) * b.ry * 0.78 * r, c: b.cols[i % 3] }
-    }),
-  )
+  const flowers = Array.from({ length: 30 }, (_, i) => {
+    const a = rnd() * Math.PI * 2
+    const r = Math.sqrt(rnd())
+    return { x: 436 + Math.cos(a) * 66 * r, y: 366 + Math.sin(a) * 36 * r, c: DZ_COLORS[i % 6], r: 5 + rnd() * 3 }
+  })
+  const lav = Array.from({ length: 18 }, (_, i) => ({ x: 94 + (i % 3) * 18 + rnd() * 4, y: 268 + Math.floor(i / 3) * 21 + rnd() * 4 }))
+  const veg = Array.from({ length: 10 }, (_, i) => ({ x: 258 + (i % 5) * 16, y: 404 + Math.floor(i / 5) * 16, tom: i % 3 === 0 }))
+  const hedge = Array.from({ length: 13 }, (_, i) => 250 + i * 18)
   const line = { fill: 'none', stroke: '#cfe6ff', strokeWidth: 2.2, strokeLinecap: 'round' }
+  const shadow = 'rgba(30,60,30,0.2)'
   return (
     <svg viewBox="0 0 600 520" aria-hidden="true">
       <defs>
@@ -42,51 +45,149 @@ export function DesignScene() {
         <clipPath id="dz-reveal">
           <circle className="dz-clip" cx="300" cy="260" r="0" />
         </clipPath>
+        <clipPath id="dz-plot">
+          <rect x="70" y="80" width="460" height="360" rx="24" />
+        </clipPath>
       </defs>
       <rect width="600" height="520" fill="#1d4e89" />
       <rect width="600" height="520" fill="url(#dz-grid)" />
 
       <g>
         <rect className="dz-line" x="70" y="80" width="460" height="360" rx="24" {...line} />
-        <path className="dz-line" d={DZ_LAWN} {...line} strokeDasharray="0" />
-        {DZ_STONES.map(([x, y], i) => (
-          <ellipse className="dz-line" key={i} cx={x} cy={y} rx="13" ry="9" {...line} />
-        ))}
-        <ellipse className="dz-line" cx="410" cy="200" rx="62" ry="40" {...line} />
-        {DZ_BEDS.map((b, i) => (
-          <ellipse className="dz-line" key={i} cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} {...line} />
-        ))}
-        <circle className="dz-line" cx="100" cy="300" r="32" {...line} />
+        <rect className="dz-line" x="92" y="100" width="140" height="112" rx="10" {...line} />
+        <circle className="dz-line" cx="150" cy="156" r="20" {...line} />
+        <path className="dz-line" d={DZ_POND} {...line} />
+        <path className="dz-line" d={DZ_BEDA} {...line} />
+        <ellipse className="dz-line" cx="112" cy="326" rx="36" ry="70" {...line} />
+        <rect className="dz-line" x="240" y="392" width="110" height="38" rx="4" {...line} />
+        <circle className="dz-line" cx="498" cy="118" r="32" {...line} />
+        <circle className="dz-line" cx="285" cy="168" r="28" {...line} />
+        <path className="dz-line" d="M250 96H468" {...line} />
+        <path className="dz-line" d={DZ_MAIN} {...line} />
+        <path className="dz-line" d={DZ_BRANCH} {...line} />
         <path className="dz-line" d="M70 466H530M70 458V474M530 458V474" {...line} strokeWidth="1.6" />
         <path className="dz-line" d="M562 80V440M554 80H570M554 440H570" {...line} strokeWidth="1.6" />
-        <text className="dz-dim" x="272" y="488" fill="#cfe6ff" fontSize="22" style={hand}>
+        <text className="dz-dim" x="278" y="494" fill="#cfe6ff" fontSize="22" style={hand}>
           12 m
         </text>
-        <text className="dz-dim" x="570" y="266" fill="#cfe6ff" fontSize="22" style={hand}>
+        <text className="dz-dim" x="572" y="266" fill="#cfe6ff" fontSize="22" style={hand}>
           9 m
         </text>
       </g>
 
       <g clipPath="url(#dz-reveal)">
-        <rect width="600" height="520" fill="#fff6df" />
-        <rect x="70" y="80" width="460" height="360" rx="24" fill="#9fdc8d" stroke="#8a6238" strokeWidth="6" />
-        <path d={DZ_LAWN} fill="#8fd18f" />
-        {DZ_STONES.map(([x, y], i) => (
-          <ellipse key={i} cx={x} cy={y} rx="13" ry="9" fill="#ead9b0" stroke="#cdb98b" strokeWidth="2" />
+        <rect width="600" height="520" fill="#e2f1d2" />
+        <rect x="70" y="80" width="460" height="360" rx="24" fill="#8fd18f" />
+        <g clipPath="url(#dz-plot)">
+          {Array.from({ length: 10 }, (_, k) => (
+            <rect key={k} x={70 + k * 46} y="80" width="23" height="360" fill="#9de29e" opacity="0.7" />
+          ))}
+        </g>
+        <rect x="70" y="80" width="460" height="360" rx="24" fill="none" stroke="#8a6238" strokeWidth="7" />
+        {DZ_POSTS.map(([x, y], i) => (
+          <rect key={i} x={x - 4} y={y - 6} width="8" height="12" rx="2" fill="#6f4a26" />
         ))}
-        <ellipse cx="410" cy="200" rx="62" ry="40" fill="#6cc6ee" stroke="#4da3cf" strokeWidth="3" />
-        <ellipse className="dz-ripple" cx="410" cy="200" rx="10" ry="6" fill="none" stroke="#fff" strokeWidth="2" opacity="0" />
-        <ellipse cx="392" cy="196" rx="14" ry="7" fill="#5db35a" />
-        <ellipse cx="430" cy="210" rx="11" ry="6" fill="#5db35a" />
-        {DZ_BEDS.map((b, i) => (
-          <ellipse key={i} cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} fill="#7b4f2c" />
+
+        <path d={DZ_MAIN} fill="none" stroke="#cdb98b" strokeWidth="34" strokeLinecap="round" />
+        <path d={DZ_BRANCH} fill="none" stroke="#cdb98b" strokeWidth="30" strokeLinecap="round" />
+        <path d={DZ_MAIN} fill="none" stroke="#ecdcb4" strokeWidth="27" strokeLinecap="round" />
+        <path d={DZ_BRANCH} fill="none" stroke="#ecdcb4" strokeWidth="23" strokeLinecap="round" />
+        <path d={DZ_MAIN} fill="none" stroke="#d3be8c" strokeWidth="3" strokeLinecap="round" strokeDasharray="1 11" />
+        <rect x="132" y="430" width="36" height="14" rx="3" fill="#b5814a" stroke="#6f4a26" strokeWidth="2" />
+
+        <rect x="92" y="100" width="140" height="112" rx="10" fill="#dccfbb" stroke="#bfae93" strokeWidth="2" />
+        {[0, 1, 2, 3].map((k) => (
+          <path key={k} d={`M${92 + k * 35} 100V212`} stroke="#c4b6a0" strokeWidth="1.5" />
+        ))}
+        {[0, 1, 2].map((k) => (
+          <path key={k} d={`M92 ${100 + k * 37}H232`} stroke="#c4b6a0" strokeWidth="1.5" />
+        ))}
+
+        <ellipse cx="410" cy="196" rx="86" ry="62" fill={shadow} transform="translate(5 7)" />
+        <path d={DZ_POND} fill="#5bbcf0" stroke="#9aa7ad" strokeWidth="9" strokeDasharray="11 4" strokeLinejoin="round" />
+        <path d="M352 190 C350 160 388 142 424 148 C464 154 474 190 454 210 C432 232 366 228 352 190Z" fill="#7fd0f6" />
+        <ellipse className="dz-ripple" cx="408" cy="188" rx="10" ry="6" fill="none" stroke="#fff" strokeWidth="2" opacity="0" />
+
+        <path d={DZ_BEDA} fill="#7b4f2c" stroke="#5c3a1d" strokeWidth="3" />
+        <ellipse cx="112" cy="326" rx="36" ry="70" fill="#7b4f2c" stroke="#5c3a1d" strokeWidth="3" />
+        <rect x="240" y="392" width="110" height="38" rx="4" fill="#b5814a" stroke="#6f4a26" strokeWidth="3" />
+        <rect x="246" y="398" width="98" height="26" fill="#6e4425" />
+
+        {hedge.map((x, i) => (
+          <circle className="dz-hedge" key={i} cx={x} cy="96" r="13" fill={i % 2 ? '#2f7d3e' : '#3f9a4a'} />
+        ))}
+
+        <g className="dz-furn">
+          <circle cx="156" cy="162" r="22" fill={shadow} />
+          <circle cx="150" cy="156" r="20" fill="#9a6a3c" stroke="#6f4a26" strokeWidth="2" />
+          <circle cx="150" cy="156" r="6" fill="#fff6df" />
+        </g>
+        {[
+          [150, 124],
+          [118, 176],
+          [184, 176],
+        ].map(([x, y], i) => (
+          <rect className="dz-furn" key={i} x={x - 10} y={y - 10} width="20" height="20" rx="7" fill="#e8426b" stroke="#a82a4b" strokeWidth="2" />
+        ))}
+        {[
+          [106, 114],
+          [218, 114],
+          [218, 198],
+        ].map(([x, y], i) => (
+          <g className="dz-furn" key={i}>
+            <circle cx={x} cy={y} r="10" fill="#c9714a" />
+            <circle cx={x} cy={y} r="6.5" fill="#4aa35c" />
+          </g>
+        ))}
+
+        {lav.map((l, i) => (
+          <circle className="dz-lav" key={i} cx={l.x + 8} cy={l.y} r="5" fill={i % 2 ? '#8e6bd1' : '#a78bea'} />
+        ))}
+        {veg.map((v, i) => (
+          <circle className="dz-veg" key={i} cx={v.x} cy={v.y} r={v.tom ? 5 : 7} fill={v.tom ? '#e53b3b' : i % 2 ? '#79c46a' : '#5db35a'} />
         ))}
         {flowers.map((f, i) => (
-          <circle className="dz-flower" key={i} cx={f.x} cy={f.y} r="6" fill={f.c} />
+          <circle className="dz-flower" key={i} cx={f.x} cy={f.y} r={f.r} fill={f.c} />
         ))}
-        <circle cx="100" cy="300" r="32" fill="#3f9a4a" />
-        <circle className="dz-canopy" cx="100" cy="300" r="22" fill="#5db35a" />
-        <circle cx="94" cy="292" r="7" fill="#79c46a" />
+
+        <g className="dz-tree">
+          <ellipse cx="288" cy="190" rx="34" ry="30" fill={shadow} />
+          <circle cx="285" cy="168" r="28" fill="#3f9a4a" />
+          <circle cx="278" cy="160" r="16" fill="#5db35a" />
+          <circle cx="294" cy="176" r="10" fill="#79c46a" />
+        </g>
+        <g className="dz-tree">
+          <ellipse cx="506" cy="136" rx="38" ry="34" fill={shadow} />
+          <circle cx="498" cy="118" r="32" fill="#2f7d3e" />
+          <circle cx="488" cy="108" r="19" fill="#4aa35c" />
+          <circle cx="506" cy="126" r="11" fill="#5db35a" />
+        </g>
+
+        <g className="dz-lily">
+          <ellipse cx="380" cy="186" rx="14" ry="9" fill="#4aa35c" />
+          <ellipse cx="438" cy="204" rx="12" ry="8" fill="#5db35a" />
+          <ellipse cx="420" cy="166" rx="11" ry="7" fill="#4aa35c" />
+          <circle cx="380" cy="184" r="5" fill="#ff9ec7" />
+          <circle cx="438" cy="202" r="4.5" fill="#ffc2dc" />
+        </g>
+        <g className="dz-koi">
+          <ellipse cx="400" cy="206" rx="9" ry="4" fill="#ff7a3d" />
+          <path d="M391 206 L384 202 L384 210Z" fill="#ff9a63" />
+        </g>
+        <g className="dz-koi">
+          <ellipse cx="448" cy="178" rx="8" ry="3.6" fill="#fff" />
+          <path d="M456 178 L463 174 L463 182Z" fill="#ffd2b8" />
+        </g>
+
+        {DZ_LABELS.map((l, i) => (
+          <g className="dz-label" key={i}>
+            <rect x={l.x} y={l.y - 18} width={l.w} height="26" rx="13" fill="#fffbe8" stroke="#cdb98b" strokeWidth="2" />
+            <circle cx={l.x + 12} cy={l.y - 5} r="4" fill="#e8426b" />
+            <text x={l.x + 22} y={l.y + 1} fontSize="18" fill="#4a3320" style={hand}>
+              {l.t}
+            </text>
+          </g>
+        ))}
       </g>
     </svg>
   )
@@ -560,28 +661,36 @@ export function WaterScene() {
 }
 
 /* ------------------------------------------------------------------ */
-/* 6. Garden care: snip, shape, tidy                                   */
+/* 6. Garden care: a shaggy hedge row snipped into one neat line       */
 /* ------------------------------------------------------------------ */
 
 const GREENS = ['#3f9a4a', '#4aa35c', '#5db35a', '#2f7d3e']
-const WEEDS = [110, 168, 438, 498, 548]
+const ROW = [108, 204, 300, 396, 492]
+const WEEDS = [78, 176, 306, 430, 528]
 
 export function CareScene() {
   const rnd = seeded(77)
-  const blobs = Array.from({ length: 56 }, () => {
-    const a = rnd() * Math.PI * 2
-    const r = Math.sqrt(rnd()) * 118 * (0.7 + rnd() * 0.4)
-    return { x: 300 + Math.cos(a) * r, y: 288 + Math.sin(a) * r * 0.95, r: 20 + rnd() * 20, c: GREENS[Math.floor(rnd() * 4)] }
-  }).sort((a, b) => a.y - b.y)
-  const twigs = Array.from({ length: 12 }, (_, i) => {
-    const a = (i / 12) * Math.PI * 2 + rnd() * 0.3
-    const r1 = 100 + rnd() * 20
-    const r2 = r1 + 26 + rnd() * 22
-    return { x1: 300 + Math.cos(a) * r1, y1: 288 + Math.sin(a) * r1, x2: 300 + Math.cos(a) * r2, y2: 288 + Math.sin(a) * r2 * 0.98 }
-  }).filter((t) => t.y2 < 396)
+  const heights = [1.1, 0.82, 1.28, 0.95, 1.18]
+  const shrubs = ROW.map((cx, k) => {
+    const h = heights[k]
+    const blobs = Array.from({ length: 20 }, () => {
+      const y = 392 - 10 - rnd() * 150 * h
+      return { x: cx + (rnd() - 0.5) * (112 + (392 - y) * 0.12), y, r: 17 + rnd() * 15, c: GREENS[Math.floor(rnd() * 4)] }
+    }).sort((a, b) => a.y - b.y)
+    const shoots = Array.from({ length: 4 }, () => {
+      const x = cx + (rnd() - 0.5) * 96
+      const y1 = 392 - (96 + rnd() * 44) * h
+      return { x1: x, y1, x2: x + (rnd() - 0.5) * 26, y2: y1 - 26 - rnd() * 30 }
+    })
+    return { cx, h, blobs, shoots }
+  })
   return (
     <svg viewBox="0 0 600 520" aria-hidden="true">
       <defs>
+        <linearGradient id="cr-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#bfe6fb" />
+          <stop offset="1" stopColor="#f4fbff" />
+        </linearGradient>
         <clipPath id="cr-neat-clip">
           <rect className="cr-clip-neat" x="0" y="0" width="0" height="520" />
         </clipPath>
@@ -589,43 +698,72 @@ export function CareScene() {
           <rect className="cr-clip-shag" x="0" y="0" width="600" height="520" />
         </clipPath>
       </defs>
-      <rect width="600" height="520" fill="#e2eed8" />
-      <ellipse cx="300" cy="170" rx="250" ry="90" fill="#ecf5e3" />
-      <path d="M0 410 C100 398 200 412 300 404 S500 410 600 402 V520 H0Z" fill="#b6d4a2" />
+      <rect width="600" height="400" fill="url(#cr-sky)" />
+      <circle cx="510" cy="64" r="26" fill="#ffe45c" />
+      <g fill="#fff">
+        <ellipse cx="120" cy="70" rx="46" ry="14" />
+        <ellipse cx="148" cy="60" rx="30" ry="14" />
+        <ellipse cx="330" cy="104" rx="40" ry="12" />
+      </g>
+      <path d="M0 250 C40 220 80 238 120 226 S210 214 250 232 S350 214 400 230 S520 216 600 236 V300 H0Z" fill="#a8d8b0" />
+
+      {Array.from({ length: 26 }, (_, i) => (
+        <rect key={i} x={i * 24} y="240" width="22" height="152" fill={i % 2 ? '#d6b184' : '#dcb98d'} />
+      ))}
+      <rect y="276" width="600" height="9" fill="#b88b5a" />
+      <rect y="352" width="600" height="9" fill="#b88b5a" />
+
+      <rect y="392" width="600" height="128" fill="#78c47a" />
+      {Array.from({ length: 6 }, (_, i) => (
+        <rect key={i} y={392 + i * 22} width="600" height="11" fill="#86d088" opacity="0.7" />
+      ))}
+      <ellipse cx="300" cy="396" rx="286" ry="12" fill="rgba(20,50,20,0.25)" />
 
       <g clipPath="url(#cr-shag-clip)">
         <g className="cr-shaggy">
-          {twigs.map((t, i) => (
-            <g key={i}>
-              <line x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="#4aa35c" strokeWidth="3.5" strokeLinecap="round" />
-              <circle cx={t.x2} cy={t.y2} r="7" fill="#79c46a" />
+          {shrubs.map((s) => (
+            <g key={s.cx}>
+              <ellipse cx={s.cx} cy="352" rx="64" ry={44 * s.h} fill="#2f7d3e" />
+              {s.shoots.map((t, i) => (
+                <g key={i}>
+                  <line x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="#4aa35c" strokeWidth="3.5" strokeLinecap="round" />
+                  <circle cx={t.x2} cy={t.y2} r="6.5" fill="#79c46a" />
+                </g>
+              ))}
+              {s.blobs.map((b, i) => (
+                <circle key={i} cx={b.x} cy={b.y} r={b.r} fill={b.c} />
+              ))}
             </g>
-          ))}
-          {blobs.map((b, i) => (
-            <circle key={i} cx={b.x} cy={b.y} r={b.r} fill={b.c} />
           ))}
         </g>
       </g>
 
       <g clipPath="url(#cr-neat-clip)">
         <g className="cr-neat">
-          <circle cx="300" cy="340" r="62" fill="#3f9a4a" />
-          <circle cx="300" cy="262" r="45" fill="#4aa35c" />
-          <circle cx="300" cy="205" r="29" fill="#5db35a" />
-          <path d="M262 318 A62 62 0 0 1 300 280" fill="none" stroke="#79c46a" strokeWidth="5" strokeLinecap="round" opacity="0.7" />
-          <path d="M274 246 A45 45 0 0 1 300 220" fill="none" stroke="#9bd88a" strokeWidth="4" strokeLinecap="round" opacity="0.7" />
+          {ROW.map((cx, k) => (
+            <g key={cx}>
+              <path d={`M${cx - 48} 392V312A48 48 0 0 1 ${cx + 48} 312V392Z`} fill={k % 2 ? '#4aa35c' : '#3f9a4a'} />
+              <path d={`M${cx - 36} 322A38 38 0 0 1 ${cx - 10} 280`} fill="none" stroke="#9bd88a" strokeWidth="5" strokeLinecap="round" opacity="0.65" />
+              {[
+                [-22, 350],
+                [14, 336],
+                [26, 366],
+                [-30, 372],
+                [2, 300],
+              ].map(([dx, y], i) => (
+                <circle key={i} cx={cx + dx} cy={y} r="3.4" fill="#79c46a" opacity="0.55" />
+              ))}
+            </g>
+          ))}
         </g>
       </g>
 
-      <path d="M246 392 H354 L342 438 H258Z" fill="#c9714a" />
-      <rect x="240" y="384" width="120" height="14" rx="6" fill="#d9855c" />
-
       {WEEDS.map((x, i) => (
         <g className="cr-weed" key={x} data-x={x} style={{ '--i': i }}>
-          <path d={`M${x} 430 q-14 -18 -22 -34 M${x} 430 q4 -22 2 -42 M${x} 430 q14 -16 24 -30`} fill="none" stroke="#6aa84f" strokeWidth="4" strokeLinecap="round" />
-          <circle cx={x + 2} cy="386" r="6" fill="#ff8fbf" />
-          <circle cx={x - 22} cy="394" r="4.5" fill="#6aa84f" />
-          <circle cx={x + 24} cy="400" r="4.5" fill="#6aa84f" />
+          <path d={`M${x} 456 q-14 -18 -22 -34 M${x} 456 q4 -22 2 -42 M${x} 456 q14 -16 24 -30`} fill="none" stroke="#5f9f3f" strokeWidth="4" strokeLinecap="round" />
+          <circle cx={x + 2} cy="412" r="6" fill="#ff8fbf" />
+          <circle cx={x - 22} cy="420" r="4.5" fill="#5f9f3f" />
+          <circle cx={x + 24} cy="426" r="4.5" fill="#5f9f3f" />
         </g>
       ))}
 
@@ -648,10 +786,11 @@ export function CareScene() {
       </g>
 
       {[
-        [232, 210],
-        [372, 250],
-        [284, 150],
-        [350, 330],
+        [108, 244],
+        [204, 276],
+        [300, 244],
+        [396, 276],
+        [492, 244],
       ].map(([x, y], i) => (
         <path className="cr-sparkle" key={i} d={`M${x} ${y - 14} Q${x} ${y} ${x + 14} ${y} Q${x} ${y} ${x} ${y + 14} Q${x} ${y} ${x - 14} ${y} Q${x} ${y} ${x} ${y - 14}Z`} fill="#fff7c2" stroke="#ffd93b" strokeWidth="1.5" />
       ))}
