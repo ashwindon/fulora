@@ -1,0 +1,470 @@
+.grower {
+  position: relative;
+  padding: 120px clamp(16px, 4vw, 64px) 140px;
+  background: linear-gradient(180deg, #fff6df 0%, #fde8d3 100%);
+  overflow: hidden;
+}
+
+.gr-head {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+.gr-kicker {
+  display: inline-block;
+  margin: 0 0 4px;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 36px);
+  color: var(--accent);
+  transform: rotate(-2deg);
+}
+.grower h2 {
+  font-size: clamp(42px, 6vw, 84px);
+  letter-spacing: -0.02em;
+  color: var(--leaf-dark);
+}
+.gr-lede {
+  margin: 16px auto 0;
+  max-width: 32em;
+  font-size: clamp(17px, 1.4vw, 20px);
+  color: #4a3a2b;
+}
+
+/* ---------- the cork board ---------- */
+
+.gr-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 56px 48px;
+  align-items: start;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 64px 56px 56px;
+  border: 14px solid #8f6232;
+  border-radius: 34px;
+  background-color: #d9b47c;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(120, 78, 36, 0.35) 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 40%, rgba(120, 78, 36, 0.3) 0 2px, transparent 3px),
+    radial-gradient(circle at 84% 78%, rgba(255, 238, 200, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 36% 84%, rgba(120, 78, 36, 0.3) 0 2px, transparent 3px),
+    radial-gradient(circle at 74% 12%, rgba(255, 238, 200, 0.45) 0 2px, transparent 3px);
+  background-size: 46px 46px, 58px 58px, 38px 38px, 64px 64px, 52px 52px;
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.12), inset 0 14px 40px rgba(90, 58, 26, 0.35), 0 40px 70px -30px rgba(63, 38, 21, 0.6);
+}
+
+/* ---------- polaroids ---------- */
+
+.gr-polaroid {
+  position: relative;
+  z-index: 3;
+  margin: 0;
+  padding: 14px 14px 18px;
+  border-radius: 6px;
+  background: #fffdf7;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06), 0 18px 28px -10px rgba(63, 38, 21, 0.55);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gr-polaroid:active {
+  cursor: grabbing;
+}
+.gr-photo {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: #e9efe0;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+.gr-photo svg,
+.gr-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.gr-develop {
+  position: absolute;
+  inset: 0;
+  background: #f3efe6;
+  pointer-events: none;
+}
+.gr-polaroid figcaption {
+  margin-top: 12px;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1.05;
+  text-align: center;
+  color: #3d2f22;
+}
+.gr-tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  z-index: 2;
+  width: 96px;
+  height: 28px;
+  margin-left: -48px;
+  transform: rotate(-3deg);
+  clip-path: polygon(0 8%, 5% 0, 10% 10%, 15% 0, 20% 8%, 80% 8%, 85% 0, 90% 10%, 95% 0, 100% 8%, 100% 92%, 95% 100%, 90% 90%, 85% 100%, 80% 92%, 20% 92%, 15% 100%, 10% 90%, 5% 100%, 0 92%);
+  transform-origin: center;
+}
+
+.gr-col-a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gr-main {
+  width: min(100%, 400px);
+  align-self: flex-start;
+}
+.gr-small {
+  width: min(52%, 210px);
+  padding: 10px 10px 12px;
+}
+.gr-small figcaption {
+  font-size: 21px;
+  margin-top: 8px;
+}
+.gr-small .gr-tape {
+  width: 70px;
+  margin-left: -35px;
+  height: 22px;
+}
+.gr-b {
+  align-self: flex-end;
+  margin-top: -16px;
+  margin-right: -4px;
+}
+
+/* ---------- stats tags ---------- */
+
+.gr-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.gr-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 112px;
+  padding: 10px 16px 12px;
+  border-radius: 6px 6px 18px 18px;
+  background: #fff6c9;
+  box-shadow: 0 6px 12px -4px rgba(63, 38, 21, 0.5), inset 0 0 0 2px rgba(143, 98, 50, 0.25);
+  text-align: center;
+  position: relative;
+}
+.gr-stat::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: #8f6232;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.gr-stat strong {
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--leaf-dark);
+}
+.gr-stat > span {
+  margin-top: 4px;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  color: #4a3320;
+}
+
+/* ---------- the letter ---------- */
+
+.gr-col-b {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.gr-letter {
+  position: relative;
+  z-index: 2;
+  padding: 36px 64px 30px 66px;
+  border-radius: 4px;
+  background-color: #fffdf6;
+  background-image:
+    linear-gradient(90deg, transparent 52px, rgba(232, 66, 107, 0.45) 52px 54px, transparent 54px),
+    repeating-linear-gradient(180deg, transparent 0 33px, rgba(120, 160, 200, 0.4) 33px 34px);
+  background-position: 0 0, 0 22px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05), 0 22px 34px -12px rgba(63, 38, 21, 0.55);
+  transform: rotate(0.8deg);
+}
+.gr-letter p {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(22px, 2.1vw, 27px);
+  line-height: 34px;
+  color: #2f3a52;
+}
+.gr-letter p + p {
+  margin-top: 34px;
+}
+.gr-letter .gr-hello {
+  font-size: clamp(32px, 3.2vw, 42px);
+  line-height: 34px;
+  color: var(--accent);
+}
+.gr-w {
+  display: inline-block;
+  white-space: pre;
+}
+.gr-sign {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  color: var(--accent) !important;
+  font-size: 30px !important;
+}
+.gr-pin {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a9a 0 18%, #e8426b 45%, #a82a4b 100%);
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.35);
+}
+.gr-letter .gr-small {
+  position: absolute;
+  top: -92px;
+  right: -34px;
+  z-index: 4;
+  width: 150px;
+  margin: 0;
+}
+
+/* ---------- seed packets ---------- */
+
+.gr-packets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gr-packet {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 3.7;
+  padding: 0;
+  border: 0;
+  background: none;
+  perspective: 900px;
+  cursor: pointer;
+}
+.gr-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px 8px 12px 12px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1);
+  box-shadow: 0 10px 16px -6px rgba(63, 38, 21, 0.55);
+}
+.gr-front {
+  background: var(--c);
+  color: #fff;
+  clip-path: polygon(0 0, 8% 6%, 16% 0, 24% 6%, 32% 0, 40% 6%, 48% 0, 56% 6%, 64% 0, 72% 6%, 80% 0, 88% 6%, 96% 0, 100% 3%, 100% 100%, 0 100%);
+}
+.gr-front strong {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(21px, 2vw, 25px);
+  line-height: 1;
+  text-align: center;
+}
+.gr-front em {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.gr-back {
+  background: #fffdf6;
+  box-shadow: inset 0 0 0 4px var(--c), 0 10px 16px -6px rgba(63, 38, 21, 0.55);
+  transform: rotateY(180deg);
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(18px, 1.7vw, 22px);
+  line-height: 1.12;
+  text-align: center;
+  color: #3d2f22;
+}
+.gr-packet.open .gr-front {
+  transform: rotateY(-180deg);
+}
+.gr-packet.open .gr-back {
+  transform: rotateY(0deg);
+}
+.gr-packet:hover:not(.open) .gr-front {
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+/* ---------- the fern mascot ---------- */
+
+.gr-mascot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 30px;
+  min-height: 150px;
+}
+.gr-bubble {
+  position: relative;
+  max-width: 270px;
+  margin: 0 0 56px;
+  padding: 12px 16px 14px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 20px -8px rgba(63, 38, 21, 0.55);
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 23px;
+  line-height: 1.1;
+  color: #3d2f22;
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 0% 100%;
+}
+.gr-bubble.on {
+  animation: gr-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.gr-bubble::after {
+  content: '';
+  position: absolute;
+  right: -9px;
+  bottom: 18px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+@keyframes gr-pop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.gr-fern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 128px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.gr-fern svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.gr-fern span {
+  margin-top: 2px;
+  padding: 2px 12px 4px;
+  border-radius: 999px;
+  background: #fffdf6;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--leaf-dark);
+  box-shadow: 0 4px 8px rgba(63, 38, 21, 0.35);
+}
+.gr-fronds {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: gr-breathe 3.2s ease-in-out infinite alternate;
+}
+@keyframes gr-breathe {
+  from {
+    transform: rotate(-2.5deg);
+  }
+  to {
+    transform: rotate(2.5deg);
+  }
+}
+
+/* ---------- smaller screens ---------- */
+
+@media (max-width: 860px) {
+  .gr-board {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding: 52px 18px 34px;
+    border-width: 10px;
+  }
+  .gr-main {
+    width: min(100%, 340px);
+    margin: 0 auto;
+  }
+  .gr-b {
+    margin-top: -40px;
+    margin-right: 0;
+  }
+  .gr-letter {
+    padding: 30px 20px 26px 50px;
+    background-image:
+      linear-gradient(90deg, transparent 38px, rgba(232, 66, 107, 0.45) 38px 40px, transparent 40px),
+      repeating-linear-gradient(180deg, transparent 0 33px, rgba(120, 160, 200, 0.4) 33px 34px);
+  }
+  .gr-letter .gr-small {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 150px;
+    margin: 0 0 18px auto;
+  }
+  .gr-packets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gr-fronds {
+    animation: none;
+  }
+}

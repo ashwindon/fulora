@@ -8,6 +8,7 @@ import Nav from './components/Nav.jsx'
 import Hero from './components/Hero.jsx'
 import Services from './components/Services.jsx'
 import GardenBuilder from './components/GardenBuilder.jsx'
+import MeetGrower from './components/MeetGrower.jsx'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -34,6 +35,7 @@ export default function App() {
         <Hero />
         <Services />
         <GardenBuilder />
+        <MeetGrower />
       </main>
     </>
   )
