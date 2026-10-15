@@ -13,7 +13,10 @@
   --sky: #cfeaf7;
   --ink: #2b2118;
 
-  --font-display: 'Fraunces', Georgia, serif;
+  --accent: #e8426b;
+  --accent-dark: #a82a4b;
+
+  --font-display:'Fraunces', Georgia, serif;
   --font-body: 'Nunito', system-ui, sans-serif;
   --font-hand: 'Caveat', 'Segoe Print', cursive;
 }

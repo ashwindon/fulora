@@ -41,7 +41,7 @@ export default function Landscape() {
             '--rx': c.rx,
           }}
         >
-          <g fill="#fff">
+          <g style={{ fill: 'var(--cloud)' }}>
             <ellipse cx="45" cy="40" rx="40" ry="18" />
             <ellipse cx="85" cy="30" rx="38" ry="24" />
             <ellipse cx="118" cy="40" rx="34" ry="17" />

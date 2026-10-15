@@ -39,8 +39,6 @@ export function seeded(seed) {
   }
 }
 
-const GREENS = ['#2f7d3e', '#3f9a4a', '#5db35a', '#79c46a']
-
 export function grassBlades(count = 170) {
   const rand = seeded(42)
   const blades = []
@@ -54,7 +52,7 @@ export function grassBlades(count = 170) {
         `M${(x - w).toFixed(1)} 120 ` +
         `Q${(x + lean * 0.3).toFixed(1)} ${(120 - h * 0.6).toFixed(1)} ${(x + lean).toFixed(1)} ${(120 - h).toFixed(1)} ` +
         `Q${(x + w + lean * 0.3).toFixed(1)} ${(120 - h * 0.55).toFixed(1)} ${(x + w).toFixed(1)} 120Z`,
-      fill: GREENS[Math.floor(rand() * GREENS.length)],
+      tier: Math.floor(rand() * 4),
       delay: (rand() * -4).toFixed(2),
       dur: (3 + rand() * 2.5).toFixed(2),
     })

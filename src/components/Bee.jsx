@@ -3,8 +3,14 @@ import gsap from 'gsap'
 import './Bee.css'
 
 // A bee that follows the cursor while it moves and loops around the flower when it rests.
-export default function Bee({ flowerRef, active }) {
+export default function Bee({ flowerRef, active, visible = true }) {
   const root = useRef(null)
+  const shown = useRef(visible)
+
+  useEffect(() => {
+    shown.current = visible
+    if (active) gsap.to(root.current, { opacity: visible ? 1 : 0, duration: 0.8 })
+  }, [visible, active])
 
   useEffect(() => {
     if (!active) return
@@ -14,7 +20,7 @@ export default function Bee({ flowerRef, active }) {
     let facing = 1
 
     gsap.set(el, { opacity: 0 })
-    gsap.to(el, { opacity: 1, duration: 0.6 })
+    gsap.to(el, { opacity: shown.current ? 1 : 0, duration: 0.6 })
 
     const onMove = (e) => {
       mouse = { x: e.clientX, y: e.clientY, last: performance.now() }

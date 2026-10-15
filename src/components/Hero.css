@@ -18,6 +18,16 @@
   --tree: #2f7d3e;
   --river: #4fb4ea;
   --cap: #ffffff;
+  --cloud: #ffffff;
+  --sun-a: #fff6b0;
+  --sun-b: #ffe45c;
+  --sun-c: #ffd23a;
+  --g0: #2f7d3e;
+  --g1: #3f9a4a;
+  --g2: #5db35a;
+  --g3: #79c46a;
+  --soil: #5a3a22;
+  --soil-dark: #3f2615;
 
   background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--sky-bottom) 100%);
 }
@@ -35,7 +45,7 @@
   font-family: var(--font-hand);
   font-weight: 700;
   font-size: clamp(28px, 3vw, 38px);
-  color: var(--poppy);
+  color: var(--accent);
   transform: rotate(-3deg);
 }
 
@@ -59,7 +69,7 @@
 .accent {
   position: relative;
   display: inline-block;
-  color: var(--poppy);
+  color: var(--accent);
 }
 .underline {
   position: absolute;
@@ -149,11 +159,10 @@
 
 .scroll-cue {
   position: absolute;
-  left: 50%;
-  bottom: 3.2vh;
+  right: clamp(20px, 5vw, 80px);
+  bottom: 3.6vh;
   z-index: 6;
   margin: 0;
-  transform: translateX(-50%);
   font-family: var(--font-hand);
   font-weight: 700;
   font-size: 26px;
@@ -165,7 +174,7 @@
 }
 @keyframes bob {
   50% {
-    transform: translate(-50%, 6px);
+    transform: translateY(6px);
   }
 }
 
@@ -202,8 +211,11 @@
     bottom: auto;
     justify-self: center;
     align-self: end;
-    height: min(46vh, 150vw);
-    margin-top: 2vh;
+    height: min(38vh, 150vw);
+    margin-top: 1vh;
+  }
+  .scroll-cue {
+    display: none;
   }
 }
 

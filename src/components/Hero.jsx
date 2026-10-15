@@ -1,4 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import SeasonSwitch from './SeasonSwitch.jsx'
+import { SEASONS } from './seasons.js'
 import gsap from 'gsap'
 import Bee from './Bee.jsx'
 import Landscape from './Landscape.jsx'
@@ -38,6 +40,9 @@ export default function Hero() {
   const root = useRef(null)
   const headRef = useRef(null)
   const [bloomed, setBloomed] = useState(false)
+  const [season, setSeason] = useState('summer')
+  const firstSeason = useRef(true)
+  const seasonTl = useRef(null)
 
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -132,11 +137,67 @@ export default function Hero() {
     }
   }, [])
 
+  // Switching season: the flower closes, changes colour and blooms again while
+  // the sky, hills, grass and particles all glide to the new palette.
+  useLayoutEffect(() => {
+    if (firstSeason.current) {
+      firstSeason.current = false
+      return
+    }
+    const cfg = SEASONS[season]
+    const el = root.current
+    const q = (s) => gsap.utils.toArray(s, el)
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const dur = reduce ? 0.01 : 1.8
+    const f = cfg.flower
+    const petals = q('.petal')
+    const core = q('.disc, .seeds')
+
+    gsap.to(el, { ...cfg.vars, duration: dur, ease: 'power2.inOut', overwrite: 'auto' })
+    gsap.to(document.documentElement, {
+      '--accent': cfg.accent,
+      '--accent-dark': cfg.accentDark,
+      duration: dur,
+      ease: 'power2.inOut',
+      overwrite: 'auto',
+    })
+    gsap.to(q('.stem'), { stroke: f.stem, duration: dur, overwrite: 'auto' })
+    q('.leaf-body').forEach((p, i) => {
+      gsap.to(p, { fill: f.leaves[[0, 1, 1, 0][i]], duration: dur, overwrite: 'auto' })
+    })
+    gsap.to(q('.gflower'), { opacity: cfg.grassFlowers, duration: 1, overwrite: 'auto' })
+
+    const recolour = () => {
+      q('.petal-back').forEach((p, i) => gsap.set(p, { fill: f.back[i % 2] }))
+      q('.petal-front').forEach((p, i) => gsap.set(p, { fill: f.front[i % 2] }))
+      gsap.set(q('.disc'), { fill: f.disc })
+      gsap.set(q('.seeds'), { fill: f.seeds })
+    }
+
+    if (reduce) {
+      recolour()
+      return
+    }
+
+    seasonTl.current?.kill()
+    const tl = gsap.timeline()
+    seasonTl.current = tl
+    tl.to(petals, { scale: 0.15, rotation: -30, duration: 0.5, ease: 'power2.in', stagger: { each: 0.012, from: 'edges' } }, 0)
+      .to(core, { scale: 0.55, duration: 0.4, ease: 'power2.in' }, 0.1)
+      .add(recolour, 0.55)
+      .to(petals, { scale: 1, rotation: 0, duration: 0.9, ease: 'back.out(1.8)', stagger: { each: 0.02, from: 'center' } }, 0.6)
+      .to(core, { scale: 1, duration: 0.7, ease: 'back.out(2)' }, 0.85)
+
+    gsap.to(q('.grass-in'), { scaleY: 0.5, duration: 0.45, ease: 'power2.in', yoyo: true, repeat: 1 })
+    gsap.fromTo(q('.layer'), { y: 18 }, { y: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', stagger: 0.08 })
+    gsap.fromTo(q('.hello'), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(2)', delay: 0.3 })
+  }, [season])
+
   return (
-    <section className="hero" id="top" ref={root}>
+    <section className="hero" id="top" ref={root} data-season={season}>
       <Landscape />
       <div className="hero-copy">
-        <p className="hello">hello, neighbour!</p>
+        <p className="hello">{SEASONS[season].hello}</p>
         <h1 aria-label="Let's grow something wonderful.">
           {WORDS.map((w, i) =>
             i === WORDS.length - 1 ? (
@@ -199,12 +260,12 @@ export default function Hero() {
         </svg>
       </div>
 
-      <FallingPetals active={bloomed} />
+      <FallingPetals active={bloomed} look={SEASONS[season].particles} />
 
       <svg className="grass" viewBox="0 0 1440 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <g className="grass-in">
           {GRASS_FLOWERS.map((f, i) => (
-            <g key={i}>
+            <g key={i} className="gflower">
               <path d={`M${f.x} 120 V${120 - f.h}`} stroke="#2f7d3e" strokeWidth="3.5" strokeLinecap="round" />
               <g transform={`translate(${f.x} ${120 - f.h})`}>
                 <g fill={f.color}>
@@ -222,16 +283,15 @@ export default function Hero() {
               className="blade"
               key={i}
               d={b.d}
-              fill={b.fill}
-              style={{ '--delay': `${b.delay}s`, '--dur': `${b.dur}s` }}
+              style={{ fill: `var(--g${b.tier})`, '--delay': `${b.delay}s`, '--dur': `${b.dur}s` }}
             />
           ))}
         </g>
       </svg>
 
       <svg className="soil" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 30 Q180 2 360 22 T720 22 T1080 18 T1440 24 V160 H0Z" fill="#5a3a22" />
-        <g fill="#3f2615">
+        <path d="M0 30 Q180 2 360 22 T720 22 T1080 18 T1440 24 V160 H0Z" style={{ fill: 'var(--soil)' }} />
+        <g style={{ fill: 'var(--soil-dark)' }}>
           <ellipse cx="180" cy="90" rx="16" ry="8" />
           <ellipse cx="520" cy="120" rx="22" ry="9" />
           <ellipse cx="860" cy="84" rx="14" ry="7" />
@@ -242,7 +302,9 @@ export default function Hero() {
 
       <p className="scroll-cue">scroll to grow</p>
 
-      <Bee flowerRef={headRef} active={bloomed} />
+      <SeasonSwitch season={season} onChange={setSeason} ready={bloomed} />
+
+      <Bee flowerRef={headRef} active={bloomed} visible={SEASONS[season].bee} />
     </section>
   )
 }

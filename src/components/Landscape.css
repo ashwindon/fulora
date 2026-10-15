@@ -72,7 +72,7 @@
   width: 15vh;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff6b0 0%, #ffe45c 62%, #ffd23a 100%);
+  background: radial-gradient(circle, var(--sun-a) 0%, var(--sun-b) 62%, var(--sun-c) 100%);
   box-shadow: 0 0 0 2.4vh rgba(255, 240, 150, 0.35), 0 0 0 5vh rgba(255, 240, 150, 0.16);
 }
 .hero-sun::before {
